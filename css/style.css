@@ -1,0 +1,55 @@
+:root {
+    --primary: #e74c3c;
+    --primary-dark: #c0392b;
+    --text: #2c3e50;
+    --bg: #f8f9fa;
+    --bg-light: #ffffff;
+    --border: #e0e0e0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+body { background-color: var(--bg); color: var(--text); }
+
+/* HEADER */
+.header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: var(--bg-light); box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+.logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+.search-bar input { padding: 10px 20px; border-radius: 20px; border: 1px solid var(--border); width: 300px; outline: none; transition: 0.3s; }
+.search-bar input:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(231, 76, 60, 0.3); }
+.cart-btn { background: var(--bg); padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+.cart-btn:hover { background: var(--primary); color: white; }
+.badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+
+/* LAYOUT */
+.main-container { display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto; }
+.sidebar { width: 250px; background: var(--bg-light); padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); height: fit-content; }
+.filter-group { margin-bottom: 15px; }
+.filter-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #7f8c8d; }
+.filter-group select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--border); outline: none; }
+.products-area { flex: 1; }
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+
+/* ÜRÜN KARTI (CAF CAFLI KISIM) */
+.product-card { background: var(--bg-light); border-radius: 12px; padding: 15px; position: relative; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.04); cursor: pointer; display: flex; flex-direction: column; }
+.product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.discount-badge { position: absolute; top: 10px; right: 10px; background: var(--primary); color: white; font-weight: bold; font-size: 0.75rem; padding: 5px 10px; border-radius: 20px; z-index: 10; box-shadow: 0 2px 5px rgba(231,76,60,0.4); }
+.product-img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+.product-title { font-size: 1rem; font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.product-desc { font-size: 0.75rem; color: #95a5a6; margin-bottom: 10px; height: 32px; overflow: hidden; }
+.price-area { margin-top: auto; display: flex; flex-direction: column; }
+.old-price { font-size: 0.8rem; color: #95a5a6; text-decoration: line-through; }
+.new-price { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+.btn-add { width: 100%; padding: 10px; margin-top: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.product-card:hover .btn-add { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* MODALS */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+.hidden { display: none !important; }
+.modal-content { background: var(--bg-light); padding: 25px; border-radius: 12px; width: 90%; max-width: 800px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; }
+.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #7f8c8d; }
+.btn-primary { width: 100%; padding: 12px; background: #2ecc71; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px; }
+.btn-primary:hover { background: #27ae60; }
+.form-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 5px; font-family: inherit; }
+.cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
+.cart-total { font-size: 1.4rem; font-weight: bold; text-align: right; margin-top: 15px; color: var(--primary); }
