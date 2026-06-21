@@ -2,12 +2,13 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>e-esnaf | Premium Toptan</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#044F40">
     <link rel="apple-touch-icon" href="img/logo-192.png">
+    <link rel="icon" href="img/logo-192.png" type="image/png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -17,7 +18,7 @@
 
     <div id="install-banner" class="install-banner" style="display: none;">
         <div class="install-info">
-            <img src="img/logo-192.png" alt="Logo">
+            <img src="img/logo-192.png" alt="Logo" onerror="this.onerror=null; this.style.display='none';">
             <div>
                 <h4>E-Esnaf'ı İndir</h4>
                 <p>Uygulamayı telefonuna kur, daha hızlı alışveriş yap!</p>
@@ -31,11 +32,11 @@
 
     <header class="header">
         <div class="logo" onclick="showPage('home')">
-            <img src="img/logo-192.png" alt="E-Esnaf Logo" class="header-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+            <img src="img/logo-192.png" alt="E-Esnaf Logo" class="header-logo-img" onerror="this.onerror=null; this.style.display='none';">
             <span class="logo-text">👑 e-esnaf</span>
         </div>
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Ürün ara (Mevcut sayfada)..." onkeyup="searchLocalProducts()">
+            <input type="text" id="searchInput" placeholder="Ürün ara..." onkeyup="searchLocalProducts()">
         </div>
         <div class="cart-btn" onclick="showPage('cart')">
             🛒 Sepetim <span id="cart-count" class="badge">0</span>
@@ -43,7 +44,6 @@
     </header>
 
     <div class="main-container">
-        
         <div id="page-home" class="page active">
             <div class="layout-wrapper">
                 <aside class="sidebar">
@@ -69,8 +69,7 @@
                 </aside>
 
                 <main class="products-area">
-                    <div class="products-grid" id="products-grid">
-                        </div>
+                    <div class="products-grid" id="products-grid"></div>
                     <div class="load-more-container">
                         <button id="btn-load-more" class="btn-primary" onclick="fetchProducts(true)" style="display:none; width: 100%; margin-top: 20px;">Daha Fazla Yükle</button>
                     </div>
@@ -82,7 +81,7 @@
             <div class="error-container">
                 <h1 style="font-size: 5rem; color: var(--gold);">500</h1>
                 <h2>Bağlantı Hatası</h2>
-                <p>Sunucuya veya veritabanına erişirken bir sorun oluştu. İnternet bağlantınızı kontrol edip tekrar deneyiniz.</p>
+                <p>Sunucuya erişilirken bir sorun oluştu. İnternet bağlantınızı kontrol edip tekrar deneyiniz.</p>
                 <button class="btn-primary" style="margin-top:20px;" onclick="location.reload()">Sayfayı Yenile</button>
             </div>
         </div>
@@ -91,7 +90,7 @@
             <button class="btn-back" onclick="showPage('home')">← Alışverişe Dön</button>
             <div class="detail-container">
                 <div class="detail-image-box">
-                    <img id="det-img" src="" alt="Ürün Görseli" onerror="this.src='img/logo-192.png'">
+                    <img id="det-img" src="" alt="Ürün Görseli" onerror="this.onerror=null; this.src='img/logo-512.png'">
                 </div>
                 <div class="detail-info-box">
                     <h1 id="det-name"></h1>
@@ -113,27 +112,29 @@
             <div class="cart-layout">
                 <div class="cart-items-container">
                     <h2>Sepet İçeriği</h2>
-                    <table class="cart-table">
-                        <thead>
-                            <tr>
-                                <th>Ürün</th>
-                                <th>Birim Fiyat</th>
-                                <th>Adet</th>
-                                <th>İndirim</th>
-                                <th>Toplam</th>
-                                <th>İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cart-items"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Fiyat</th>
+                                    <th>Adet</th>
+                                    <th>İndirim</th>
+                                    <th>Toplam</th>
+                                    <th>Sil</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-items"></tbody>
+                        </table>
+                    </div>
                 </div>
                 
                 <div class="checkout-form">
-                    <h3>Sipariş Özeti ve Bilgiler</h3>
+                    <h3>Sipariş Özeti</h3>
                     <div class="cart-summary">
                         <div class="summary-line"><span>Ara Toplam:</span> <span id="summary-subtotal">0.00 ₺</span></div>
                         <div class="summary-line highlight-discount"><span>Toplam İndirim:</span> <span id="summary-discount">0.00 ₺</span></div>
-                        <div class="summary-line total"><span>Ödenecek Tutar:</span> <span id="summary-total">0.00 ₺</span></div>
+                        <div class="summary-line total"><span>Ödenecek:</span> <span id="summary-total">0.00 ₺</span></div>
                     </div>
                     <div class="form-group">
                         <label>Adınız Soyadınız *</label>
@@ -151,7 +152,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>

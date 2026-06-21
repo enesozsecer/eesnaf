@@ -1,15 +1,9 @@
-// ==========================================
-// PWA (PROGRESSIVE WEB APP) & SERVICE WORKER
-// ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
-        });
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Başarısız: ', err));
     });
 }
 
-// "Uygulamayı Yükle" tetikleyicisi
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -20,65 +14,42 @@ window.addEventListener('beforeinstallprompt', (e) => {
 function installApp() {
     if(deferredPrompt) {
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('Kullanıcı PWA kurulumunu kabul etti');
-            }
+        deferredPrompt.userChoice.then(() => {
             deferredPrompt = null;
             document.getElementById('install-banner').style.display = 'none';
         });
     }
 }
 
-function closeInstallBanner() {
-    document.getElementById('install-banner').style.display = 'none';
-}
+function closeInstallBanner() { document.getElementById('install-banner').style.display = 'none'; }
 
-// ==========================================
-// 1. FIREBASE BAĞLANTISI VE AYARLARI
-// ==========================================
+// FIREBASE YAPILANDIRMASI (Burayı kendi ayarlarınla doldurmalısın)
 const firebaseConfig = {
     apiKey: "SENIN_API_KEY",
     authDomain: "SENIN_PROJE_ID.firebaseapp.com",
     projectId: "eesnaf-34bf2", 
-    storageBucket: "SENIN_PROJE_ID.appspot.com",
     messagingSenderId: "SENDER_ID",
     appId: "APP_ID"
 };
 
-// Firebase'i başlat
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ==========================================
-// GLOBAL DEĞİŞKENLER
-// ==========================================
 let cart = [];
-let loadedProducts = []; // Ekranda görünen ürünlerin bellekteki hali
-let lastVisibleDoc = null; // Sayfalama (Pagination) için son döküman
+let loadedProducts = [];
+let lastVisibleDoc = null; 
 
-window.onload = async () => {
-    await loadInitialDataAndFilters(); 
-};
+window.onload = async () => { await loadInitialDataAndFilters(); };
 
-function formatTR(num) {
-    return Number(num).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+function formatTR(num) { return Number(num).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
-// SAYFA GEÇİŞ SİSTEMİ
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
     if(targetPage) targetPage.classList.add('active');
-    
-    if(pageId === 'cart') {
-        updateCartUI();
-    }
+    if(pageId === 'cart') updateCartUI();
 }
 
-// ==========================================
-// FİLTRELERİN VERİTABANINDAN DOLDURULMASI
-// ==========================================
 async function loadInitialDataAndFilters() {
     try {
         const catSnap = await db.collection("Category").where("Deleted", "==", false).get();
@@ -86,61 +57,43 @@ async function loadInitialDataAndFilters() {
         const groupSnap = await db.collection("ProductGroup").where("Deleted", "==", false).get();
 
         const catSelect = document.getElementById('filter-category');
-        catSnap.forEach(doc => {
-            const data = doc.data();
-            catSelect.innerHTML += `<option value="${data.Id}">${data.Name}</option>`;
-        });
+        catSnap.forEach(doc => { catSelect.innerHTML += `<option value="${doc.data().Id}">${doc.data().Name}</option>`; });
 
         const brandSelect = document.getElementById('filter-brand');
-        brandSnap.forEach(doc => {
-            const data = doc.data();
-            brandSelect.innerHTML += `<option value="${data.Id}">${data.Name}</option>`;
-        });
+        brandSnap.forEach(doc => { brandSelect.innerHTML += `<option value="${doc.data().Id}">${doc.data().Name}</option>`; });
 
         const groupSelect = document.getElementById('filter-productGroup');
-        groupSnap.forEach(doc => {
-            const data = doc.data();
-            groupSelect.innerHTML += `<option value="${data.Id}">${data.Name}</option>`;
-        });
+        groupSnap.forEach(doc => { groupSelect.innerHTML += `<option value="${doc.data().Id}">${doc.data().Name}</option>`; });
 
-        // Filtreler yüklendikten sonra ilk 20 ürünü çek
         fetchProducts(false);
 
     } catch (error) {
-        console.error("Filtre verileri çekilirken hata:", error);
-        showPage('500'); // Veritabanı bağlantı hatası varsa 500 sayfasına at
+        console.error(error);
+        showPage('500'); 
     }
 }
 
-// ==========================================
-// FIREBASE'DEN SAYFALAMALI (20'şer) ÜRÜN ÇEKME
-// ==========================================
 async function fetchProducts(isLoadMore = false) {
     try {
         let query = db.collection("PublishItem");
 
-        // Seçili Filtreleri Al
         const selectedCat = document.getElementById('filter-category').value;
         const selectedBrand = document.getElementById('filter-brand').value;
         const selectedGroup = document.getElementById('filter-productGroup').value;
 
-        // Filtreleri Firebase Sorgusuna Ekle
         if (selectedCat) query = query.where("CategoryId", "==", selectedCat);
         if (selectedBrand) query = query.where("BrandId", "==", selectedBrand);
         if (selectedGroup) query = query.where("ProductGroupId", "==", selectedGroup);
 
-        // Her seferinde 20 veri çek
         query = query.limit(20);
 
-        // Eğer 'Daha Fazla Yükle'ye basıldıysa ve son döküman varsa, oradan devam et
         if (isLoadMore && lastVisibleDoc) {
             query = query.startAfter(lastVisibleDoc);
         } else if (!isLoadMore) {
-            // Eğer yeni bir filtre seçildiyse sıfırla
             lastVisibleDoc = null;
             loadedProducts = [];
             document.getElementById('products-grid').innerHTML = '';
-            document.getElementById('searchInput').value = ''; // Yeni aramada inputu sıfırla
+            document.getElementById('searchInput').value = ''; 
         }
 
         const snapshot = await query.get();
@@ -153,50 +106,32 @@ async function fetchProducts(isLoadMore = false) {
             return;
         }
 
-        // Son görünen dökümanı güncelle (bir sonraki sayfa için)
         lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
 
-        // Gelen verileri belleğe kaydet
-        snapshot.forEach(doc => {
-            loadedProducts.push(doc.data());
-        });
+        snapshot.forEach(doc => { loadedProducts.push(doc.data()); });
 
-        // 20 veri geldiyse butonu göster, daha az geldiyse veriler bitmiştir butonu gizle
         if(snapshot.docs.length === 20) {
             document.getElementById('btn-load-more').style.display = 'block';
         } else {
             document.getElementById('btn-load-more').style.display = 'none';
         }
 
-        // Ekrana Çiz
         renderProductsToGrid(loadedProducts);
 
     } catch (error) {
-        console.error("Ürünler çekilirken hata:", error);
-        showPage('500'); // Hata durumunda direkt 500 sayfası
+        console.error(error);
+        showPage('500'); 
     }
 }
 
-// ==========================================
-// YEREL ARAMA (Input ile)
-// ==========================================
 function searchLocalProducts() {
     const q = document.getElementById('searchInput').value.toLowerCase();
-    if(!q) {
-        renderProductsToGrid(loadedProducts);
-        return;
-    }
-    // Ekrana yüklenmiş (loadedProducts) olanlar içinde arama yapar
+    if(!q) { renderProductsToGrid(loadedProducts); return; }
     const filtered = loadedProducts.filter(p => p.Name && p.Name.toLowerCase().includes(q));
     renderProductsToGrid(filtered);
-    
-    // Arama yapılırken 'Daha Fazla' butonunu gizle ki kafalar karışmasın
     document.getElementById('btn-load-more').style.display = 'none';
 }
 
-// ==========================================
-// ÜRÜNLERİ EKRANA (HTML) BASMA
-// ==========================================
 function renderProductsToGrid(productArray) {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = '';
@@ -205,13 +140,13 @@ function renderProductsToGrid(productArray) {
         let discountHtml = p.DiscountRate > 0 ? `<div class="discount-badge">%${p.DiscountRate} İndirim</div>` : '';
         let oldPriceHtml = p.DiscountRate > 0 ? `<span class="old-price">${formatTR(p.Price)} ₺</span>` : '<span class="old-price" style="visibility:hidden;">-</span>';
         
-        // Görsel yoksa veya hata verirse fallback olarak logo-192.png kullan
+        // Hata durumunda sonsuz döngü yaratmayan onerror kullanımı
         let imgSrc = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
 
         grid.innerHTML += `
             <div class="product-card" onclick="openDetail('${p.Id}')">
                 ${discountHtml}
-                <img src="${imgSrc}" class="product-img" onerror="this.src='img/logo-192.png'">
+                <img src="${imgSrc}" class="product-img" onerror="this.onerror=null; this.src='img/logo-192.png'">
                 <h3 class="product-title">${p.Name}</h3>
                 <p class="product-desc">${p.Description || ''}</p>
                 <div class="price-area">
@@ -223,11 +158,6 @@ function renderProductsToGrid(productArray) {
         `;
     });
 }
-
-// ==========================================
-// DETAY VE SEPET İŞLEMLERİ (REFERENCE ERROR ÇÖZÜMÜ)
-// Bu fonksiyonlar global (window seviyesinde) olmalıdır.
-// ==========================================
 
 window.openDetail = function(id) {
     const p = loadedProducts.find(x => x.Id === id);
@@ -255,11 +185,8 @@ window.addToCart = function(id, qty = 1) {
     if (!p) return;
 
     const existing = cart.find(x => x.Id === id);
-    if (existing) {
-        existing.qty += Number(qty);
-    } else {
-        cart.push({ ...p, qty: Number(qty) });
-    }
+    if (existing) existing.qty += Number(qty);
+    else cart.push({ ...p, qty: Number(qty) });
     
     updateCartIcon();
 };
@@ -272,18 +199,14 @@ window.updateCartUI = function() {
     const tbody = document.getElementById('cart-items');
     tbody.innerHTML = '';
     
-    let subTotal = 0; 
-    let discountTotal = 0; 
-    let grandTotal = 0; 
+    let subTotal = 0; let discountTotal = 0; let grandTotal = 0; 
 
     cart.forEach((item, index) => {
         const itemNormalTotal = item.Price * item.qty;
         const itemSaleTotal = item.SalePrice * item.qty;
         const itemDiscount = itemNormalTotal - itemSaleTotal;
 
-        subTotal += itemNormalTotal;
-        discountTotal += itemDiscount;
-        grandTotal += itemSaleTotal;
+        subTotal += itemNormalTotal; discountTotal += itemDiscount; grandTotal += itemSaleTotal;
 
         tbody.innerHTML += `
             <tr>
@@ -303,7 +226,6 @@ window.updateCartUI = function() {
     document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + " ₺";
     document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + " ₺";
     document.getElementById('summary-total').innerText = formatTR(grandTotal) + " ₺";
-    
     updateCartIcon();
 };
 
@@ -319,9 +241,9 @@ window.removeFromCart = function(index) {
 };
 
 // ==========================================
-// WHATSAPP SİPARİŞ TAMAMLAMA (PDF OLUŞTURMA)
+// WEB SHARE API İLE WHATSAPP'A PDF GÖNDERİMİ
 // ==========================================
-window.completeOrder = function() {
+window.completeOrder = async function() {
     if (cart.length === 0) return alert("Sepetiniz boş!");
     
     const name = document.getElementById('cus-name').value.trim();
@@ -332,7 +254,6 @@ window.completeOrder = function() {
         return alert("Lütfen Ad Soyad, İşletme Adı ve Teslimat Adresi alanlarının hepsini doldurunuz!");
     }
 
-    // PDF OLUŞTURMA
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
@@ -357,58 +278,49 @@ window.completeOrder = function() {
         
         subTotal += itemNormalTotal; discountTotal += itemDiscount; grandTotal += itemSaleTotal;
 
-        return [
-            item.Name,
-            formatTR(item.Price) + " TL",
-            item.qty.toString(),
-            itemDiscount > 0 ? "-" + formatTR(itemDiscount) + " TL" : "-",
-            formatTR(itemSaleTotal) + " TL"
-        ];
+        return [ item.Name, formatTR(item.Price) + " TL", item.qty.toString(), itemDiscount > 0 ? "-" + formatTR(itemDiscount) + " TL" : "-", formatTR(itemSaleTotal) + " TL" ];
     });
 
-    doc.autoTable({
-        startY: 85,
-        head: [['Urun Adi', 'Liste Fiyat', 'Adet', 'Indirim', 'Net Tutar']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [4, 79, 64], textColor: [212, 175, 55] } 
-    });
+    doc.autoTable({ startY: 85, head: [['Urun Adi', 'Liste Fiyat', 'Adet', 'Indirim', 'Net Tutar']], body: tableData, theme: 'grid', headStyles: { fillColor: [4, 79, 64], textColor: [212, 175, 55] } });
 
     const finalY = doc.lastAutoTable.finalY + 15;
-    doc.setFontSize(12);
-    doc.text(`Ara Toplam: ${formatTR(subTotal)} TL`, 130, finalY);
-    doc.setTextColor(255, 0, 0);
-    doc.text(`Kazanilan Indirim: -${formatTR(discountTotal)} TL`, 130, finalY + 8);
-    doc.setTextColor(4, 79, 64);
-    doc.setFontSize(16);
-    doc.text(`ODENECEK TUTAR: ${formatTR(grandTotal)} TL`, 130, finalY + 20);
+    doc.setFontSize(12); doc.text(`Ara Toplam: ${formatTR(subTotal)} TL`, 130, finalY);
+    doc.setTextColor(255, 0, 0); doc.text(`Kazanilan Indirim: -${formatTR(discountTotal)} TL`, 130, finalY + 8);
+    doc.setTextColor(4, 79, 64); doc.setFontSize(16); doc.text(`ODENECEK TUTAR: ${formatTR(grandTotal)} TL`, 130, finalY + 20);
 
-    // 1. PDF'i Cihaza İndir
+    // PDF DOSYASINI HAZIRLA
     const fileName = `Siparis_${company.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
-    doc.save(fileName);
+    const pdfBlob = doc.output('blob');
+    const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
-    // 2. WhatsApp Mesajını Hazırla
-    const waText = `*YENİ TOPTAN SİPARİŞ!* 👑\n\n` +
-                   `*İşletme:* ${company}\n` +
-                   `*Yetkili:* ${name}\n` +
-                   `*Adres:* ${address}\n` +
-                   `*Sipariş Kalem Sayısı:* ${cart.length}\n` +
-                   `*Toplam Tutar:* ${formatTR(grandTotal)} ₺\n\n` +
-                   `_Not: Güvenlik gereği PDF otomatik eklenemez. Lütfen cihazınıza yeni inen PDF dosyasını bu sohbete ekleyerek siparişinizi onaylayın._`;
-
-    // 3. İlgili Numaraya WhatsApp Bağlantısını Aç
-    const phone = "905069012520"; 
-    const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText)}`;
-    
-    // Yönlendirmeden önce sistemi temizle
+    // SİPARİŞİ SIFIRLA
     cart = []; 
     document.getElementById('cus-name').value = '';
     document.getElementById('cus-company').value = '';
     document.getElementById('cus-address').value = '';
-    updateCartIcon();
-    
-    setTimeout(() => {
+    updateCartIcon(); updateCartUI();
+
+    const waText = `*YENİ SİPARİŞ!* 👑\nİşletme: ${company}\nTutar: ${formatTR(grandTotal)} ₺`;
+
+    // EĞER CİHAZ (Telefon) DOSYA PAYLAŞIMINI DESTEKLİYORSA
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: 'Sipariş Faturası',
+                text: waText
+            });
+            showPage('home');
+        } catch (error) {
+            console.log('Kullanıcı paylaşımı iptal etti.');
+            showPage('home');
+        }
+    } else {
+        // BİLGİSAYAR İÇİN ESKİ YÖNTEM (Desteklemeyen cihazlar)
+        doc.save(fileName);
+        const phone = "905069012520"; 
+        const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText + '\n\nNot: Fatura PDF olarak inmiştir, lütfen sohbete manuel ekleyiniz.')}`;
         window.open(waLink, '_blank');
         showPage('home');
-    }, 1000); 
+    }
 };
