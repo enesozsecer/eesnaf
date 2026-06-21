@@ -2,52 +2,31 @@
 // 1. PWA & KURULUM BİLDİRİMİ
 // ==========================================
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Başarısız: ', err));
-    });
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Başarısız: ', err)); });
 }
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Otomatik banner'ı da göster (Destekleyen tarayıcılarda)
     document.getElementById('install-banner').style.display = 'flex';
 });
 
-// Sidebar'daki veya Banner'daki butona tıklandığında çalışır
 window.installAppManual = function() {
     if (deferredPrompt) {
-        // Android / Chrome / Edge için standart kurulum penceresi
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('Kullanıcı uygulamayı kurdu.');
-            }
-            deferredPrompt = null;
-            document.getElementById('install-banner').style.display = 'none';
-        });
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('install-banner').style.display = 'none'; });
     } else {
-        // iPhone (iOS) veya zaten uygulamayı kurmuş cihazlar için manuel yönlendirme
-        const isIos = () => {
-          const userAgent = window.navigator.userAgent.toLowerCase();
-          return /iphone|ipad|ipod/.test(userAgent);
-        }
-        
-        if (isIos()) {
-            alert("📱 iPhone'a yüklemek için:\n\nTarayıcının alt kısmındaki 'Paylaş' (Kare ve yukarı ok ⍐) ikonuna dokunun ve menüden 'Ana Ekrana Ekle' (Add to Home Screen) seçeneğini seçin.");
-        } else {
-            alert("✅ Uygulama zaten cihazınızda yüklü olabilir veya tarayıcınız otomatik kurulumu desteklemiyor.\n\nTarayıcı menüsünden (Sağ üstteki 3 nokta) 'Ana Ekrana Ekle' veya 'Uygulamayı Yükle' seçeneğini kullanarak indirebilirsiniz.");
-        }
+        const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+        if (isIos()) alert("📱 iPhone'a yüklemek için:\n\nTarayıcının altındaki 'Paylaş' (Kare ve yukarı ok) ikonuna dokunun ve 'Ana Ekrana Ekle' seçeneğini seçin.");
+        else alert("✅ Uygulama cihazınızda yüklü olabilir veya tarayıcınız desteklemiyor.\n\nMenüden (Sağ üstteki 3 nokta) 'Ana Ekrana Ekle' seçeneği ile indirebilirsiniz.");
     }
 }
+window.closeInstallBanner = function() { document.getElementById('install-banner').style.display = 'none'; }
 
-// Banner üzerindeki çarpıya basılırsa kapat
-window.closeInstallBanner = function() { 
-    document.getElementById('install-banner').style.display = 'none'; 
-}
-
-// FIREBASE YAPILANDIRMASI (Burayı Kendi Projenin Ayarlarıyla Değiştir!)
+// ==========================================
+// 2. FIREBASE YAPILANDIRMASI (Burayı Doldur!)
+// ==========================================
 const firebaseConfig = {
     apiKey: "SENIN_API_KEY",
     authDomain: "SENIN_PROJE_ID.firebaseapp.com",
@@ -55,15 +34,16 @@ const firebaseConfig = {
     messagingSenderId: "SENDER_ID",
     appId: "APP_ID"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 1. BIRIMLER EKLENDI
+// ==========================================
+// 3. GLOBAL DEĞİŞKENLER & YARDIMCILAR
+// ==========================================
 const BIRIM = { 1: 'Adet', 2: 'Kilogram', 3: 'Gram', 4: 'Litre', 5: 'Metre', 6: 'Paket', 7: 'Koli' };
-
 let DB = { Categories: [], Brands: [], ProductGroups: [], Products: [] };
 let cart = [];
+let html5QrcodeScanner; // Barkod Tarayıcı Objesi
 
 function formatTR(num) { return Number(num).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function showSpinner(text="Veriler Yükleniyor...") { document.getElementById('spinner-text').innerText = text; document.getElementById('global-spinner').style.display = 'flex'; }
@@ -72,9 +52,20 @@ function hideSpinner() { document.getElementById('global-spinner').style.display
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById('page-' + pageId).classList.add('active');
-    if(pageId === 'cart') updateCartUI();
+    
+    // Sepet sayfasındayken Arama ve Barkod alanını GİZLE
+    const searchArea = document.getElementById('header-search-area');
+    if (pageId === 'cart') {
+        searchArea.style.display = 'none';
+        updateCartUI();
+    } else {
+        searchArea.style.display = 'flex';
+    }
 }
 
+// ==========================================
+// 4. VERİ ÇEKME İŞLEMLERİ
+// ==========================================
 window.onload = () => { loadDataWithCache(); };
 
 async function loadDataWithCache() {
@@ -82,13 +73,9 @@ async function loadDataWithCache() {
     const cachedData = localStorage.getItem("eesnaf_DB");
     const cacheTimestamp = localStorage.getItem("eesnaf_time");
     const now = Date.now();
-    
     if (cachedData && cacheTimestamp && (now - cacheTimestamp < 43200000)) {
         DB = JSON.parse(cachedData);
-        populateFilters();
-        filterRenderedProducts();
-        hideSpinner();
-        return;
+        populateFilters(); filterRenderedProducts(); hideSpinner(); return;
     }
     fetchFromFirebase();
 }
@@ -102,11 +89,12 @@ window.forceRefreshData = function() {
 async function fetchFromFirebase() {
     showSpinner("Buluttan Güncelleniyor...");
     try {
-        const catSnap = await db.collection("Category").where("Deleted", "==", false).get();
-        const brandSnap = await db.collection("Brand").where("Deleted", "==", false).get();
-        const groupSnap = await db.collection("ProductGroup").where("Deleted", "==", false).get();
-        const productSnap = await db.collection("PublishItem").get();
-
+        const [catSnap, brandSnap, groupSnap, productSnap] = await Promise.all([
+            db.collection("Category").where("Deleted", "==", false).get(),
+            db.collection("Brand").where("Deleted", "==", false).get(),
+            db.collection("ProductGroup").where("Deleted", "==", false).get(),
+            db.collection("PublishItem").get()
+        ]);
         DB.Categories = catSnap.docs.map(doc => doc.data());
         DB.Brands = brandSnap.docs.map(doc => doc.data());
         DB.ProductGroups = groupSnap.docs.map(doc => doc.data());
@@ -115,14 +103,8 @@ async function fetchFromFirebase() {
         localStorage.setItem("eesnaf_DB", JSON.stringify(DB));
         localStorage.setItem("eesnaf_time", Date.now().toString());
 
-        populateFilters();
-        filterRenderedProducts();
-        hideSpinner();
-    } catch (error) {
-        console.error(error);
-        hideSpinner();
-        showPage('500'); 
-    }
+        populateFilters(); filterRenderedProducts(); hideSpinner();
+    } catch (error) { console.error(error); hideSpinner(); showPage('500'); }
 }
 
 function populateFilters() {
@@ -130,10 +112,7 @@ function populateFilters() {
     const brandSelect = document.getElementById('filter-brand');
     const groupSelect = document.getElementById('filter-productGroup');
     
-    catSelect.innerHTML = '<option value="">Tümü</option>';
-    brandSelect.innerHTML = '<option value="">Tümü</option>';
-    groupSelect.innerHTML = '<option value="">Tümü</option>';
-
+    catSelect.innerHTML = '<option value="">Tümü</option>'; brandSelect.innerHTML = '<option value="">Tümü</option>'; groupSelect.innerHTML = '<option value="">Tümü</option>';
     DB.Categories.forEach(c => { catSelect.innerHTML += `<option value="${c.Id}">${c.Name}</option>`; });
     DB.Brands.forEach(b => { brandSelect.innerHTML += `<option value="${b.Id}">${b.Name}</option>`; });
     DB.ProductGroups.forEach(g => { groupSelect.innerHTML += `<option value="${g.Id}">${g.Name}</option>`; });
@@ -149,11 +128,34 @@ window.toggleSidebar = function() {
 window.changeGrid = function(col) {
     document.querySelectorAll('.btn-grid').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-    const grid = document.getElementById('products-grid');
-    grid.className = 'products-grid'; 
-    grid.classList.add(`grid-${col}`);
+    document.getElementById('products-grid').className = `products-grid grid-${col}`;
 };
 
+// ==========================================
+// 5. BARKOD OKUYUCU FONKSİYONLARI
+// ==========================================
+window.openBarcodeScanner = function() {
+    document.getElementById('barcode-modal').style.display = 'flex';
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    document.getElementById('searchInput').value = decodedText;
+    filterRenderedProducts();
+    closeBarcodeScanner();
+}
+
+function onScanFailure(error) { /* Sessizce hataları yoksay */ }
+
+window.closeBarcodeScanner = function() {
+    if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
+    document.getElementById('barcode-modal').style.display = 'none';
+}
+
+// ==========================================
+// 6. ÜRÜN FİLTRELEME VE LİSTELEME
+// ==========================================
 window.filterRenderedProducts = function() {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = '';
@@ -165,8 +167,12 @@ window.filterRenderedProducts = function() {
     const selGroup = document.getElementById('filter-productGroup').value;
 
     const filteredProducts = DB.Products.filter(p => {
-        if (q && p.Name && !p.Name.toLowerCase().includes(q)) return false;
-        if (isDiscounted && !(Number(p.DiscountRate) > 0)) return false; // Sadece indirimli kontrolü
+        // Arama kısmında hem Name (İsim) hem de BarCode (Barkod) sütunlarına bakıyoruz
+        const nameMatch = p.Name && p.Name.toLowerCase().includes(q);
+        const barcodeMatch = p.BarCode && p.BarCode.toLowerCase().includes(q);
+        
+        if (q && !nameMatch && !barcodeMatch) return false;
+        if (isDiscounted && !(Number(p.DiscountRate) > 0)) return false; 
         if (selCat && p.CategoryId !== selCat) return false;
         if (selBrand && p.BrandId !== selBrand) return false;
         if (selGroup && p.ProductGroupId !== selGroup) return false;
@@ -174,20 +180,19 @@ window.filterRenderedProducts = function() {
     });
 
     if(filteredProducts.length === 0) {
-        grid.innerHTML = '<p style="color:var(--gold); grid-column: 1 / -1;">Bu filtrelere uygun ürün bulunamadı.</p>';
+        grid.innerHTML = '<p style="color:var(--gold); grid-column: 1 / -1;">Bu filtrelere veya barkoda uygun ürün bulunamadı.</p>';
         return;
     }
 
     filteredProducts.forEach(p => {
-        // İndirim Oranını Formatlama (Virgülden Sonra Maksimum 2 Basamak)
         let rawDiscount = Number(p.DiscountRate);
         let formattedDiscountText = rawDiscount % 1 === 0 ? rawDiscount.toString() : rawDiscount.toLocaleString('tr-TR', {maximumFractionDigits: 2});
         let discountHtml = rawDiscount > 0 ? `<div class="discount-badge">%${formattedDiscountText} İndirim</div>` : '';
-        
-        let oldPriceHtml = rawDiscount > 0 ? `<span class="old-price">${formatTR(p.Price)} ₺</span>` : `<span class="old-price"></span>`;
+        let oldPriceHtml = rawDiscount > 0 ? `<span class="old-price">${formatTR(p.Price)}₺</span>` : `<span class="old-price"></span>`;
         let imgSrc = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
         let unitName = BIRIM[p.UnitId] || 'Adet';
 
+        // Ön Yüzdeki Kartlara Miktar (NumberBox) eklendi
         grid.innerHTML += `
             <div class="product-card" onclick="openDetail('${p.Id}')">
                 <div class="image-wrapper">
@@ -199,27 +204,30 @@ window.filterRenderedProducts = function() {
                     <p class="product-desc" title="${p.Description || ''}">${p.Description || ''}</p>
                     <div class="price-area">
                         ${oldPriceHtml}
-                        <span class="new-price">${formatTR(p.SalePrice)} ₺ <span class="unit-suffix">/ ${unitName}</span></span>
+                        <span class="new-price">${formatTR(p.SalePrice)}₺ <span class="unit-suffix">/ ${unitName}</span></span>
                     </div>
-                    <button class="btn-add" onclick="event.stopPropagation(); addToCart('${p.Id}', 1)">Sepete Ekle</button>
+                    <div class="card-action-area" onclick="event.stopPropagation();">
+                        <input type="number" id="qty-${p.Id}" value="1" min="1" class="card-qty-input">
+                        <button class="btn-add" onclick="addToCart('${p.Id}', document.getElementById('qty-${p.Id}').value)">Sepete Ekle</button>
+                    </div>
                 </div>
             </div>
         `;
     });
 };
 
+// ==========================================
+// 7. SEPET İŞLEMLERİ VE SİPARİŞ KONTROLÜ
+// ==========================================
 window.openDetail = function(id) {
     const p = DB.Products.find(x => x.Id === id);
     if(!p) return;
     document.getElementById('det-img').src = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
     document.getElementById('det-name').innerText = p.Name;
     document.getElementById('det-desc').innerText = p.Description || '';
-    document.getElementById('det-old-price').innerText = Number(p.DiscountRate) > 0 ? formatTR(p.Price) + " ₺" : "";
-    document.getElementById('det-price').innerText = formatTR(p.SalePrice) + " ₺";
-    
-    // Birim yazdırma
+    document.getElementById('det-old-price').innerText = Number(p.DiscountRate) > 0 ? formatTR(p.Price) + "₺" : "";
+    document.getElementById('det-price').innerText = formatTR(p.SalePrice) + "₺";
     document.getElementById('det-unit').innerText = BIRIM[p.UnitId] || 'Adet';
-    
     document.getElementById('det-qty').value = 1;
     document.getElementById('det-add-btn').onclick = () => { addToCart(p.Id, document.getElementById('det-qty').value); showPage('cart'); };
     showPage('detail');
@@ -245,29 +253,28 @@ window.updateCartUI = function() {
         const itemSaleTotal = item.SalePrice * item.qty;
         const itemDiscount = itemNormalTotal - itemSaleTotal;
         subTotal += itemNormalTotal; discountTotal += itemDiscount; grandTotal += itemSaleTotal;
-        
         let unitName = BIRIM[item.UnitId] || 'Adet';
 
         tbody.innerHTML += `
             <tr>
                 <td style="font-weight:bold; color:var(--gold);">${item.Name}</td>
-                <td><span style="text-decoration:line-through; font-size:0.8rem; color:#ff6b6b;">${item.DiscountRate > 0 ? formatTR(item.Price) : ''}</span><br>${formatTR(item.SalePrice)} ₺ <span style="font-size:0.8rem; color:var(--text-muted)">/ ${unitName}</span></td>
+                <td><span style="text-decoration:line-through; font-size:0.8rem; color:#ff6b6b;">${item.DiscountRate > 0 ? formatTR(item.Price) : ''}</span><br>${formatTR(item.SalePrice)}₺ <span style="font-size:0.8rem; color:var(--text-muted)">/ ${unitName}</span></td>
                 <td>
                     <div class="cart-qty-wrapper">
                         <input type="number" value="${item.qty}" min="1" onchange="updateQty(${index}, this.value)">
                         <span style="font-size:0.9rem;">${unitName}</span>
                     </div>
                 </td>
-                <td style="color:#ff6b6b;">${itemDiscount > 0 ? '-' + formatTR(itemDiscount) + ' ₺' : '-'}</td>
-                <td style="font-weight:bold;">${formatTR(itemSaleTotal)} ₺</td>
+                <td style="color:#ff6b6b;">${itemDiscount > 0 ? '-' + formatTR(itemDiscount) + '₺' : '-'}</td>
+                <td style="font-weight:bold;">${formatTR(itemSaleTotal)}₺</td>
                 <td><button class="btn-remove" onclick="removeFromCart(${index})">✕</button></td>
             </tr>
         `;
     });
 
-    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + " ₺";
-    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + " ₺";
-    document.getElementById('summary-total').innerText = formatTR(grandTotal) + " ₺";
+    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + "₺";
+    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + "₺";
+    document.getElementById('summary-total').innerText = formatTR(grandTotal) + "₺";
     updateCartIcon();
 };
 
@@ -276,11 +283,18 @@ window.removeFromCart = function(index) { cart.splice(index, 1); updateCartUI();
 
 window.completeOrder = async function() {
     if (cart.length === 0) return alert("Sepetiniz boş!");
+    
+    // MİNİMUM 5000₺ KONTROLÜ
+    const grandTotalCheck = cart.reduce((sum, item) => sum + (item.SalePrice * item.qty), 0);
+    if (grandTotalCheck < 5000) {
+        return alert("⚠️ Minimum sipariş tutarı 5000₺'dir.\nLütfen alışverişe devam ederek sepet tutarınızı yükseltiniz.");
+    }
+
     const name = document.getElementById('cus-name').value.trim();
     const company = document.getElementById('cus-company').value.trim();
     const address = document.getElementById('cus-address').value.trim();
     
-    if (!name || !company || !address) return alert("Tüm alanları doldurunuz!");
+    if (!name || !company || !address) return alert("Lütfen formdaki tüm alanları doldurunuz!");
     
     showSpinner("Sipariş Hazırlanıyor...");
 
@@ -295,7 +309,6 @@ window.completeOrder = async function() {
         const iN = item.Price * item.qty; const iS = item.SalePrice * item.qty; const iD = iN - iS;
         subTotal += iN; discountTotal += iD; grandTotal += iS;
         let unitName = BIRIM[item.UnitId] || 'Adet';
-        
         return [ item.Name, formatTR(item.Price) + " TL", item.qty.toString() + ' ' + unitName, iD > 0 ? "-" + formatTR(iD) + " TL" : "-", formatTR(iS) + " TL" ];
     });
 
@@ -312,14 +325,14 @@ window.completeOrder = async function() {
     cart = []; document.getElementById('cus-name').value = ''; document.getElementById('cus-company').value = ''; document.getElementById('cus-address').value = '';
     updateCartIcon(); updateCartUI();
 
-    const waText = `*YENİ SİPARİŞ!* 👑\nİşletme: ${company}\nTutar: ${formatTR(grandTotal)} ₺`;
+    const waText = `*YENİ SİPARİŞ!* 👑\nİşletme: ${company}\nTutar: ${formatTR(grandTotal)}₺`;
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try { await navigator.share({ files: [file], title: 'Sipariş', text: waText }); hideSpinner(); showPage('home'); } 
         catch (error) { hideSpinner(); showPage('home'); }
     } else {
         doc.save(fileName);
-        const phone = "905069012520"; 
+        const phone = "90506012520"; 
         const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText + '\n\nNot: Fatura PDF olarak inmiştir, lütfen sohbete manuel ekleyiniz.')}`;
         window.open(waLink, '_blank');
         hideSpinner(); showPage('home');

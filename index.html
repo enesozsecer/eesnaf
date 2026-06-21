@@ -13,6 +13,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -21,20 +23,6 @@
     <div id="global-spinner" class="spinner-overlay">
         <div class="spinner"></div>
         <p id="spinner-text">Veriler Yükleniyor...</p>
-    </div>
-
-    <div id="install-banner" class="install-banner" style="display: none;">
-        <div class="install-info">
-            <img src="img/logo-192.png" alt="Logo" onerror="this.onerror=null; this.style.display='none';">
-            <div>
-                <h4>E-Esnaf'ı İndir</h4>
-                <p>Uygulamayı telefonuna kur, daha hızlı alışveriş yap!</p>
-            </div>
-        </div>
-        <div class="install-actions">
-            <button onclick="installApp()" class="btn-install">Yükle</button>
-            <button onclick="closeInstallBanner()" class="btn-close-install">✕</button>
-        </div>
     </div>
 
     <header class="header">
@@ -47,8 +35,10 @@
             </div>
         </div>
 
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Ürün ara..." onkeyup="filterRenderedProducts()">
+        <div id="header-search-area" class="search-bar">
+            <button onclick="openBarcodeScanner()" class="btn-barcode" title="Barkod Okut">📷</button>
+            <input type="text" id="searchInput" placeholder="Ürün veya Barkod ara..."
+                onkeyup="filterRenderedProducts()">
             <button onclick="forceRefreshData()" class="btn-refresh-icon" title="Verileri Güncelle">🔄</button>
         </div>
 
@@ -57,21 +47,29 @@
         </div>
     </header>
 
+    <div class="top-notice">
+        ⚠️ Min. sipariş tutarı 5000₺ - Hizmetimiz sadece Çorum sınırlarında geçerlidir.
+    </div>
+
+    <div id="barcode-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h3 style="color:var(--gold); margin-bottom:15px;">Ürün Barkodu Okut</h3>
+            <div id="reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+            <button onclick="closeBarcodeScanner()" class="btn-primary"
+                style="margin-top:20px; width:100%; background:#ff4757;">İptal / Kapat</button>
+        </div>
+    </div>
+
     <div class="main-container">
         <div id="page-home" class="page active">
             <div class="layout-wrapper">
-
                 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
                 <aside class="sidebar" id="sidebar">
                     <div class="sidebar-header">
                         <h3>Filtreler</h3>
                         <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
                     </div>
-                    <button id="sidebar-install-btn" class="btn-primary w-100"
-                        style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #28a745; color: white; border:none;"
-                        onclick="installAppManual()">
-                        📱 Uygulamayı İndir
-                    </button>
+
                     <div class="filter-group checkbox-group">
                         <label class="custom-checkbox">
                             <input type="checkbox" id="filter-discounted" onchange="filterRenderedProducts()">
@@ -168,11 +166,11 @@
                 <div class="checkout-form">
                     <h3>Sipariş Özeti</h3>
                     <div class="cart-summary">
-                        <div class="summary-line"><span>Ara Toplam:</span> <span id="summary-subtotal">0.00 ₺</span>
+                        <div class="summary-line"><span>Ara Toplam:</span> <span id="summary-subtotal">0.00₺</span>
                         </div>
                         <div class="summary-line highlight-discount"><span>Toplam İndirim:</span> <span
-                                id="summary-discount">0.00 ₺</span></div>
-                        <div class="summary-line total"><span>Ödenecek:</span> <span id="summary-total">0.00 ₺</span>
+                                id="summary-discount">0.00₺</span></div>
+                        <div class="summary-line total"><span>Ödenecek:</span> <span id="summary-total">0.00₺</span>
                         </div>
                     </div>
                     <div class="form-group">
@@ -192,6 +190,15 @@
             </div>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>ozsecer soft</strong> tarafından geliştirilmiştir. Copyright © 2026, Tüm Hakları Saklıdır.</p>
+            <p>📍 Merkez / Çorum | 📞 0506 901 25 20</p>
+            <a href="https://wa.me/905060125200" target="_blank" class="btn-whatsapp-support">🟢 WhatsApp Destek</a>
+            <button id="install-btn" class="btn-whatsapp-support" onclick="installAppManual()">📱 Uygulamayı İndir</button>
+        </div>
+    </footer>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
