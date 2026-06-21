@@ -1,46 +1,54 @@
 :root {
-    --bg-color: #044F40;        /* Ana Arka Plan */
-    --gold: #d4af37;            /* Altın Detaylar */
-    --gold-hover: #b5952f;      /* Altın Hover */
-    --panel-bg: #066653;        /* Kart Arka Planı (Bir tık açık yeşil) */
-    --text-light: #ffffff;      /* Ana Yazı Rengi */
-    --text-muted: #a8c9c2;      /* Pasif Yazı Rengi */
+    --bg-color: #044F40;        
+    --gold: #d4af37;            
+    --gold-hover: #b5952f;      
+    --panel-bg: #066653;        
+    --text-light: #ffffff;      
+    --text-muted: #a8c9c2;      
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
 
 body { background-color: var(--bg-color); color: var(--text-light); }
 
-/* KAMPANYA BANDI */
-.campaign-banner { background: var(--gold); color: var(--bg-color); padding: 8px 0; overflow: hidden; white-space: nowrap; font-weight: 800; font-size: 0.9rem; letter-spacing: 1px; }
-.marquee { display: inline-block; animation: marquee 25s linear infinite; }
-@keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+/* PWA Install Banner */
+.install-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--panel-bg); border-top: 2px solid var(--gold); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
+.install-info { display: flex; align-items: center; gap: 15px; }
+.install-info img { width: 45px; height: 45px; border-radius: 10px; }
+.install-info h4 { color: var(--gold); margin-bottom: 2px; }
+.install-info p { font-size: 0.8rem; color: var(--text-muted); }
+.install-actions { display: flex; gap: 10px; align-items: center; }
+.btn-install { background: var(--gold); color: var(--bg-color); border: none; padding: 8px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+.btn-close-install { background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; padding: 5px; }
 
 /* HEADER */
-.header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: var(--panel-bg); border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; }
-.logo { font-size: 1.8rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: var(--panel-bg); border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 15px;}
+.logo { font-size: 1.5rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.header-logo-img { height: 40px; width: auto; border-radius: 5px; }
 .search-bar input { padding: 12px 20px; border-radius: 25px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light); width: 350px; outline: none; transition: 0.3s; }
 .search-bar input::placeholder { color: var(--text-muted); }
-.search-bar input:focus { box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
-.cart-btn { background: var(--gold); color: var(--bg-color); padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
-.cart-btn:hover { background: var(--gold-hover); }
+.cart-btn { background: var(--gold); color: var(--bg-color); padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px; }
 .badge { background: var(--bg-color); color: var(--gold); padding: 3px 10px; border-radius: 12px; font-size: 0.9rem; }
 
 /* LAYOUT & SAYFALAR */
-.main-container { padding: 30px; max-width: 1400px; margin: 0 auto; }
+.main-container { padding: 30px; max-width: 1400px; margin: 0 auto; min-height: 80vh;}
 .page { display: none; animation: fadeIn 0.4s ease-in-out; }
 .page.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .layout-wrapper { display: flex; gap: 30px; }
 .sidebar { width: 260px; background: var(--panel-bg); padding: 25px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); height: fit-content; }
-.sidebar h3 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.sidebar h3 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; }
 .filter-group { margin-bottom: 20px; }
 .filter-group label { display: block; font-size: 0.9rem; margin-bottom: 8px; color: var(--text-muted); }
 .filter-group select { width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-color); color: var(--text-light); border: 1px solid var(--gold); outline: none; }
 
 .products-area { flex: 1; }
 .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
+
+/* HATA 500 SAYFASI */
+.error-container { text-align: center; padding: 50px 20px; background: var(--panel-bg); border-radius: 15px; border: 1px solid #ff6b6b; margin-top: 50px; }
+.error-container h2 { margin: 15px 0; }
 
 /* ÜRÜN KARTLARI */
 .product-card { background: var(--panel-bg); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; padding: 15px; position: relative; transition: all 0.3s ease; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
@@ -58,15 +66,14 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 /* ORTAK BUTONLAR */
 .btn-primary { padding: 12px 25px; background: var(--gold); color: var(--bg-color); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .btn-primary:hover { background: var(--gold-hover); }
-.btn-back { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-weight: bold; transition: 0.3s; }
-.btn-back:hover { background: var(--gold); color: var(--bg-color); }
+.btn-back { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
 .w-100 { width: 100%; }
 
 /* ÜRÜN DETAY SAYFASI */
-.detail-container { display: flex; background: var(--panel-bg); border-radius: 15px; padding: 40px; gap: 40px; border: 1px solid rgba(212, 175, 55, 0.3); }
-.detail-image-box { flex: 1; }
+.detail-container { display: flex; background: var(--panel-bg); border-radius: 15px; padding: 40px; gap: 40px; border: 1px solid rgba(212, 175, 55, 0.3); flex-wrap: wrap;}
+.detail-image-box { flex: 1; min-width: 300px; }
 .detail-image-box img { width: 100%; height: 400px; object-fit: cover; border-radius: 15px; border: 2px solid var(--gold); }
-.detail-info-box { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.detail-info-box { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 300px; }
 #det-name { font-size: 2.5rem; color: var(--gold); margin-bottom: 15px; }
 .detail-desc { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
 .detail-price-area { margin-bottom: 30px; }
@@ -76,16 +83,16 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 .qty-input { width: 80px; padding: 12px; font-size: 1.2rem; text-align: center; border-radius: 8px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light); }
 
 /* SEPET SAYFASI */
-.cart-layout { display: flex; gap: 30px; }
-.cart-items-container { flex: 2; background: var(--panel-bg); padding: 25px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.3); }
+.cart-layout { display: flex; gap: 30px; flex-wrap: wrap;}
+.cart-items-container { flex: 2; background: var(--panel-bg); padding: 25px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.3); min-width: 300px; overflow-x: auto;}
 .cart-items-container h2 { color: var(--gold); margin-bottom: 20px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 10px; }
-.cart-table { width: 100%; border-collapse: collapse; }
+.cart-table { width: 100%; border-collapse: collapse; min-width: 500px;}
 .cart-table th { text-align: left; padding: 15px; color: var(--gold); border-bottom: 2px solid rgba(212, 175, 55, 0.2); }
 .cart-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
 .cart-table input[type="number"] { width: 60px; padding: 5px; background: var(--bg-color); color: var(--text-light); border: 1px solid var(--gold); border-radius: 5px; text-align: center; }
 .btn-remove { background: none; border: none; color: #ff6b6b; font-size: 1.2rem; cursor: pointer; }
 
-.checkout-form { flex: 1; background: var(--panel-bg); padding: 30px; border-radius: 15px; border: 1px solid var(--gold); height: fit-content; }
+.checkout-form { flex: 1; background: var(--panel-bg); padding: 30px; border-radius: 15px; border: 1px solid var(--gold); height: fit-content; min-width: 300px;}
 .checkout-form h3 { color: var(--gold); margin-bottom: 20px; }
 .cart-summary { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
 .summary-line { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1rem; }
@@ -94,6 +101,13 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-size: 0.9rem; margin-bottom: 8px; color: var(--gold); }
-.form-input { width: 100%; padding: 12px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light); border-radius: 8px; font-family: inherit; outline: none; }
-.form-input::placeholder { color: var(--text-muted); }
-.form-input:focus { box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+.form-input { width: 100%; padding: 12px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light); border-radius: 8px; outline: none; }
+
+/* Responsive Mobil Ayarları */
+@media (max-width: 768px) {
+    .layout-wrapper { flex-direction: column; }
+    .sidebar { width: 100%; }
+    .search-bar input { width: 100%; }
+    .header { flex-direction: column; align-items: stretch; }
+    .logo { justify-content: center; margin-bottom: 10px;}
+}
