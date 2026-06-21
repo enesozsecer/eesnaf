@@ -3,91 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e-esnaf | Toptan Sipariş Portalı</title>
+    <title>e-esnaf | Premium Toptan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+    <div class="campaign-banner">
+        <div class="marquee">
+            <span>✨ BÜYÜK YAZ KAMPANYASI BAŞLADI! SEÇİLİ ÜRÜNLERDE %30'A VARAN İNDİRİMLER ✨ YENİ SEZON ÜRÜNLERİ STOKLARDA! ✨ 10.000 TL ÜZERİ SİPARİŞLERDE ÜCRETSİZ TESLİMAT ✨</span>
+        </div>
+    </div>
+
     <header class="header">
-        <div class="logo">
-            <span class="logo-icon">🛍️</span> e-esnaf
+        <div class="logo" onclick="showPage('home')">
+            <span class="logo-icon">👑</span> e-esnaf
         </div>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Ürün ara..." onkeyup="renderProducts()">
         </div>
-        <div class="cart-btn" onclick="toggleCart()">
+        <div class="cart-btn" onclick="showPage('cart')">
             🛒 Sepetim <span id="cart-count" class="badge">0</span>
         </div>
     </header>
 
     <div class="main-container">
-        <aside class="sidebar">
-            <h3>Filtreler</h3>
-            <div class="filter-group">
-                <label>Kategori</label>
-                <select id="filter-category" onchange="renderProducts()">
-                    <option value="">Tümü</option>
-                    </select>
-            </div>
-            <div class="filter-group">
-                <label>Ürün Grubu</label>
-                <select id="filter-group" onchange="renderProducts()">
-                    <option value="">Tümü</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Marka</label>
-                <select id="filter-brand" onchange="renderProducts()">
-                    <option value="">Tümü</option>
-                </select>
-            </div>
-        </aside>
-
-        <main class="products-area">
-            <div class="products-grid" id="products-grid">
-                </div>
-        </main>
-    </div>
-
-    <div id="cart-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>🛒 Sipariş Sepetiniz</h2>
-                <button onclick="toggleCart()" class="close-btn">✕</button>
-            </div>
-            <div class="modal-body" style="display: flex; gap: 20px;">
-                <div id="cart-items" style="flex: 2; max-height: 400px; overflow-y: auto;">
+        
+        <div id="page-home" class="page active">
+            <div class="layout-wrapper">
+                <aside class="sidebar">
+                    <h3>Filtreler</h3>
+                    <div class="filter-group">
+                        <label>Kategori</label>
+                        <select id="filter-category" onchange="renderProducts()">
+                            <option value="">Tümü</option>
+                        </select>
                     </div>
+                    <div class="filter-group">
+                        <label>Marka</label>
+                        <select id="filter-brand" onchange="renderProducts()">
+                            <option value="">Tümü</option>
+                        </select>
+                    </div>
+                </aside>
+
+                <main class="products-area">
+                    <div class="products-grid" id="products-grid"></div>
+                </main>
+            </div>
+        </div>
+
+        <div id="page-detail" class="page">
+            <button class="btn-back" onclick="showPage('home')">← Alışverişe Dön</button>
+            <div class="detail-container">
+                <div class="detail-image-box">
+                    <img id="det-img" src="" alt="Ürün Görseli">
+                </div>
+                <div class="detail-info-box">
+                    <h1 id="det-name"></h1>
+                    <p id="det-desc" class="detail-desc"></p>
+                    <div class="detail-price-area">
+                        <span id="det-old-price" class="old-price"></span>
+                        <span id="det-price" class="new-price"></span>
+                    </div>
+                    <div class="detail-actions">
+                        <input type="number" id="det-qty" value="1" min="1" class="qty-input">
+                        <button class="btn-primary" id="det-add-btn">Sepete Ekle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-cart" class="page">
+            <button class="btn-back" onclick="showPage('home')">← Alışverişe Dön</button>
+            <div class="cart-layout">
+                <div class="cart-items-container">
+                    <h2>Sepet İçeriği</h2>
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Ürün</th>
+                                <th>Birim Fiyat</th>
+                                <th>Adet</th>
+                                <th>İndirim</th>
+                                <th>Toplam</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-items">
+                            </tbody>
+                    </table>
+                </div>
                 
-                <div class="checkout-form" style="flex: 1; background: var(--bg-light); padding: 15px; border-radius: 8px;">
-                    <h3>Sipariş Bilgileri</h3>
-                    <input type="text" id="cus-name" placeholder="Adınız Soyadınız" class="form-input">
-                    <input type="text" id="cus-company" placeholder="İşletme Adı (Opsiyonel)" class="form-input">
-                    <textarea id="cus-address" placeholder="Teslimat Adresi" class="form-input" rows="3"></textarea>
+                <div class="checkout-form">
+                    <h3>Sipariş Özeti ve Bilgiler</h3>
                     
-                    <div class="cart-total">
-                        Toplam: <span id="cart-total-price">0.00 ₺</span>
+                    <div class="cart-summary">
+                        <div class="summary-line"><span>Ara Toplam:</span> <span id="summary-subtotal">0.00 ₺</span></div>
+                        <div class="summary-line highlight-discount"><span>Toplam İndirim:</span> <span id="summary-discount">0.00 ₺</span></div>
+                        <div class="summary-line total"><span>Ödenecek Tutar:</span> <span id="summary-total">0.00 ₺</span></div>
                     </div>
-                    <button class="btn-primary" onclick="completeOrder()">🟢 WhatsApp ile Sipariş Ver</button>
+
+                    <div class="form-group">
+                        <label>Adınız Soyadınız *</label>
+                        <input type="text" id="cus-name" placeholder="Zorunlu Alan" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>İşletme Adı *</label>
+                        <input type="text" id="cus-company" placeholder="Zorunlu Alan" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Teslimat Adresi *</label>
+                        <textarea id="cus-address" placeholder="Zorunlu Alan" class="form-input" rows="3"></textarea>
+                    </div>
+                    
+                    <button class="btn-primary w-100" onclick="completeOrder()">🟢 Siparişi Tamamla (WhatsApp)</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="detail-modal" class="modal hidden">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <button onclick="closeDetail()" class="close-btn" style="position: absolute; right: 15px; top: 15px;">✕</button>
-            <img id="det-img" src="" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
-            <h2 id="det-name" style="margin: 10px 0;"></h2>
-            <p id="det-desc" style="color: #666; font-size: 0.9rem;"></p>
-            <div style="font-size: 1.5rem; color: #e74c3c; font-weight: bold; margin: 15px 0;" id="det-price"></div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <input type="number" id="det-qty" value="1" min="1" style="width: 60px; text-align: center; font-size: 1.1rem; border: 1px solid #ddd; border-radius: 5px;">
-                <button class="btn-primary" id="det-add-btn">Sepete Ekle</button>
-            </div>
-        </div>
     </div>
 
     <script src="js/app.js"></script>

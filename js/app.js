@@ -1,32 +1,41 @@
-// Test Verisi (Daha sonra bunu doğrudan Firebase'den çekeceğiz)
+// Veritabanından gelen tam yapıya uygun ürünler
 const DB = {
     Products: [
         {
-            Id: "e5ef84f7-9a53-4e70-9059-0ffc9d5d3585",
-            ProductId: "db976cbe-83e2-492c-93a2-a3cb2838edca",
-            Name: "14a Balon",
-            Description: "Parti ve etkinlikler için özel üretim dayanıklı balon. Paket içi 100 adet.",
-            PicturePath: "https://i.ibb.co/6w2fH7n/placeholder-balon.jpg", // Test için temsili resim, base64 de çalışır
-            Price: 200,
-            DiscountRate: 10,
-            SalePrice: 180,
-            StockQuantity: 15,
-            UnitId: 6, // 6 = Pk
-            BrandId: "d33c1cf3",
-            CategoryId: "3dde546a"
+            Id: "f3987520-623c-492c-8ee1-e8e01ab7757e",
+            ProductId: "3a10b15a-691e-4429-9d6a-903ce7696c33",
+            ProductGroupId: "40967fe9-5e02-4fe9-a8cc-ee9a661e8a17",
+            CategoryId: "2dd32608-a51e-49a4-a27e-c6db3db76bd8",
+            BrandId: "718bb433-ebff-4554-a2b9-00c005ba609f",
+            BarCode: "8691234567890",
+            Name: "Blendax Şampuan 500ml",
+            Description: "Yasemin özlü, dökülme karşıtı toptan şampuan paketi.",
+            PicturePath: "https://via.placeholder.com/400x400/044F40/d4af37?text=Blendax",
+            Price: 150, // Normal Fiyat
+            DiscountRate: 26, // İndirim oranı
+            SalePrice: 110, // Satış Fiyatı (Senin tabloda 110 olarak belirlenmiş)
+            StockQuantity: 132,
+            UnitId: 1,
+            UpdatedDate: "2026-06-16T21:15:10.402Z",
+            UpdatedUser: "Cihaz_879"
         },
-        // Vitrini dolu görmek için 2. bir sahte ürün ekliyoruz
         {
-            Id: "2", ProductId: "p2", Name: "Kırmızı Kurdele (50mt)", Description: "Süsleme kurdelesi.",
-            PicturePath: "https://i.ibb.co/Wc2tXyq/placeholder-kurdele.jpg",
-            Price: 50, DiscountRate: 0, SalePrice: 50, StockQuantity: 100, UnitId: 1
+            Id: "a123",
+            ProductId: "b456",
+            Name: "Toptan Havlu Kağıt",
+            Description: "3 Katlı ekstra emici. Koli içi 24 rulo.",
+            PicturePath: "https://via.placeholder.com/400x400/044F40/d4af37?text=Havlu+Kagit",
+            Price: 200,
+            DiscountRate: 0,
+            SalePrice: 200,
+            StockQuantity: 50,
+            UnitId: 1
         }
     ]
 };
 
-let cart = []; // Sepetimiz
+let cart = [];
 
-// Sayfa yüklendiğinde ürünleri çiz
 window.onload = () => {
     renderProducts();
 };
@@ -35,7 +44,19 @@ function formatTR(num) {
     return Number(num).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Ürünleri Ekrana Dizen Motor
+// SAYFA GEÇİŞ SİSTEMİ (SPA)
+function showPage(pageId) {
+    // Tüm sayfaları gizle
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    // İstenen sayfayı göster
+    document.getElementById('page-' + pageId).classList.add('active');
+    
+    if(pageId === 'cart') {
+        updateCartUI();
+    }
+}
+
+// ÜRÜNLERİ LİSTELEME
 function renderProducts() {
     const grid = document.getElementById('products-grid');
     const q = document.getElementById('searchInput').value.toLowerCase();
@@ -44,14 +65,13 @@ function renderProducts() {
     DB.Products.forEach(p => {
         if (q && !p.Name.toLowerCase().includes(q)) return;
 
-        // İndirim varsa kırmızı rozeti ve eski fiyatı göster
         let discountHtml = p.DiscountRate > 0 ? `<div class="discount-badge">%${p.DiscountRate} İndirim</div>` : '';
         let oldPriceHtml = p.DiscountRate > 0 ? `<span class="old-price">${formatTR(p.Price)} ₺</span>` : '<span class="old-price" style="visibility:hidden;">-</span>';
 
         grid.innerHTML += `
             <div class="product-card" onclick="openDetail('${p.Id}')">
                 ${discountHtml}
-                <img src="${p.PicturePath || 'https://via.placeholder.com/200'}" class="product-img">
+                <img src="${p.PicturePath}" class="product-img">
                 <h3 class="product-title">${p.Name}</h3>
                 <p class="product-desc">${p.Description}</p>
                 <div class="price-area">
@@ -64,7 +84,26 @@ function renderProducts() {
     });
 }
 
-// ---------------- SEPET İŞLEMLERİ ----------------
+// DETAY SAYFASI
+function openDetail(id) {
+    const p = DB.Products.find(x => x.Id === id);
+    document.getElementById('det-img').src = p.PicturePath;
+    document.getElementById('det-name').innerText = p.Name;
+    document.getElementById('det-desc').innerText = p.Description;
+    
+    document.getElementById('det-old-price').innerText = p.DiscountRate > 0 ? formatTR(p.Price) + " ₺" : "";
+    document.getElementById('det-price').innerText = formatTR(p.SalePrice) + " ₺";
+    
+    document.getElementById('det-qty').value = 1;
+    document.getElementById('det-add-btn').onclick = () => {
+        addToCart(p.Id, document.getElementById('det-qty').value);
+        showPage('cart'); // Ekleyince direkt sepete gitsin
+    };
+    
+    showPage('detail');
+}
+
+// SEPET İŞLEMLERİ
 function addToCart(id, qty = 1) {
     const p = DB.Products.find(x => x.Id === id);
     if (!p) return;
@@ -76,33 +115,47 @@ function addToCart(id, qty = 1) {
         cart.push({ ...p, qty: Number(qty) });
     }
     
-    updateCartUI();
-    closeDetail();
+    updateCartIcon();
+}
+
+function updateCartIcon() {
+    document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
 }
 
 function updateCartUI() {
-    document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+    const tbody = document.getElementById('cart-items');
+    tbody.innerHTML = '';
     
-    const list = document.getElementById('cart-items');
-    list.innerHTML = '';
-    let total = 0;
+    let subTotal = 0; // İndirimsiz toplam
+    let discountTotal = 0; // Toplam indirim tutarı
+    let grandTotal = 0; // Ödenecek
 
     cart.forEach((item, index) => {
-        const lineTotal = item.SalePrice * item.qty;
-        total += lineTotal;
-        list.innerHTML += `
-            <div class="cart-item">
-                <div style="flex:2; font-weight:bold;">${item.Name}</div>
-                <div style="flex:1;">
-                    <input type="number" value="${item.qty}" min="1" style="width:50px; text-align:center;" onchange="updateQty(${index}, this.value)">
-                </div>
-                <div style="flex:1; text-align:right; color:var(--primary); font-weight:bold;">${formatTR(lineTotal)} ₺</div>
-                <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size:1.2rem; margin-left:10px;">🗑️</button>
-            </div>
+        const itemNormalTotal = item.Price * item.qty;
+        const itemSaleTotal = item.SalePrice * item.qty;
+        const itemDiscount = itemNormalTotal - itemSaleTotal;
+
+        subTotal += itemNormalTotal;
+        discountTotal += itemDiscount;
+        grandTotal += itemSaleTotal;
+
+        tbody.innerHTML += `
+            <tr>
+                <td style="font-weight:bold; color:var(--gold);">${item.Name}</td>
+                <td><span style="text-decoration:line-through; font-size:0.8rem; color:#ff6b6b;">${item.DiscountRate > 0 ? formatTR(item.Price) : ''}</span><br>${formatTR(item.SalePrice)} ₺</td>
+                <td><input type="number" value="${item.qty}" min="1" onchange="updateQty(${index}, this.value)"></td>
+                <td style="color:#ff6b6b;">${itemDiscount > 0 ? '-' + formatTR(itemDiscount) + ' ₺' : '-'}</td>
+                <td style="font-weight:bold;">${formatTR(itemSaleTotal)} ₺</td>
+                <td><button class="btn-remove" onclick="removeFromCart(${index})">✕</button></td>
+            </tr>
         `;
     });
 
-    document.getElementById('cart-total-price').innerText = formatTR(total) + " ₺";
+    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + " ₺";
+    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + " ₺";
+    document.getElementById('summary-total').innerText = formatTR(grandTotal) + " ₺";
+    
+    updateCartIcon();
 }
 
 function updateQty(index, val) {
@@ -116,29 +169,7 @@ function removeFromCart(index) {
     updateCartUI();
 }
 
-// ---------------- MODALLAR ----------------
-function toggleCart() {
-    document.getElementById('cart-modal').classList.toggle('hidden');
-}
-
-function openDetail(id) {
-    const p = DB.Products.find(x => x.Id === id);
-    document.getElementById('det-img').src = p.PicturePath || 'https://via.placeholder.com/200';
-    document.getElementById('det-name').innerText = p.Name;
-    document.getElementById('det-desc').innerText = p.Description;
-    document.getElementById('det-price').innerText = formatTR(p.SalePrice) + " ₺";
-    document.getElementById('det-qty').value = 1;
-    
-    document.getElementById('det-add-btn').onclick = () => addToCart(p.Id, document.getElementById('det-qty').value);
-    
-    document.getElementById('detail-modal').classList.remove('hidden');
-}
-
-function closeDetail() {
-    document.getElementById('detail-modal').classList.add('hidden');
-}
-
-// ---------------- WHATSAPP & PDF MOTORU ----------------
+// SİPARİŞ & PDF & WHATSAPP
 function completeOrder() {
     if (cart.length === 0) return alert("Sepetiniz boş!");
     
@@ -146,60 +177,92 @@ function completeOrder() {
     const company = document.getElementById('cus-company').value.trim();
     const address = document.getElementById('cus-address').value.trim();
     
-    if (!name) return alert("Lütfen adınızı giriniz.");
+    // ZORUNLU ALAN KONTROLLERİ
+    if (!name || !company || !address) {
+        return alert("Lütfen Ad Soyad, İşletme Adı ve Teslimat Adresi alanlarının hepsini doldurunuz!");
+    }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // PDF Başlığı
-    doc.setFontSize(20);
-    doc.text("YENI SIPARIS (e-esnaf)", 14, 20);
+    // PDF TASARIMI
+    doc.setFillColor(4, 79, 64); // Dark Green Header
+    doc.rect(0, 0, 210, 40, 'F');
     
+    doc.setTextColor(212, 175, 55); // Gold Text
+    doc.setFontSize(24);
+    doc.text("E-ESNAF SIPARIS FORMU", 14, 25);
+    
+    doc.setTextColor(0, 0, 0);
     doc.setFontSize(11);
-    doc.text(`Tarih: ${new Date().toLocaleString('tr-TR')}`, 14, 30);
-    doc.text(`Musteri: ${name} ${company ? '('+company+')' : ''}`, 14, 38);
-    doc.text(`Adres: ${address}`, 14, 46);
+    doc.text(`Tarih: ${new Date().toLocaleString('tr-TR')}`, 14, 50);
+    doc.text(`Musteri: ${name}`, 14, 58);
+    doc.text(`Isletme: ${company}`, 14, 66);
+    doc.text(`Adres: ${address}`, 14, 74);
 
-    // Tablo Verileri
-    const tableData = cart.map(item => [
-        item.Name,
-        item.qty.toString(),
-        formatTR(item.SalePrice) + " TL",
-        formatTR(item.SalePrice * item.qty) + " TL"
-    ]);
+    let subTotal = 0;
+    let discountTotal = 0;
+    let grandTotal = 0;
 
-    let totalAmount = cart.reduce((sum, item) => sum + (item.SalePrice * item.qty), 0);
+    const tableData = cart.map(item => {
+        const itemNormalTotal = item.Price * item.qty;
+        const itemSaleTotal = item.SalePrice * item.qty;
+        const itemDiscount = itemNormalTotal - itemSaleTotal;
+        
+        subTotal += itemNormalTotal;
+        discountTotal += itemDiscount;
+        grandTotal += itemSaleTotal;
 
-    doc.autoTable({
-        startY: 55,
-        head: [['Urun Adi', 'Miktar', 'Birim Fiyat', 'Toplam']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [231, 76, 60] } // Kırmızı tema
+        return [
+            item.Name,
+            formatTR(item.Price) + " TL",
+            item.qty.toString(),
+            itemDiscount > 0 ? "-" + formatTR(itemDiscount) + " TL" : "-",
+            formatTR(itemSaleTotal) + " TL"
+        ];
     });
 
-    doc.setFontSize(14);
-    doc.text(`GENEL TOPLAM: ${formatTR(totalAmount)} TL`, 14, doc.lastAutoTable.finalY + 15);
+    doc.autoTable({
+        startY: 85,
+        head: [['Urun Adi', 'Liste Fiyat', 'Adet', 'Indirim', 'Net Tutar']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [4, 79, 64], textColor: [212, 175, 55] } 
+    });
 
-    // 1. PDF'i Cihaza İndir
-    const fileName = `Siparis_${name.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+    const finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(12);
+    doc.text(`Ara Toplam: ${formatTR(subTotal)} TL`, 130, finalY);
+    doc.setTextColor(255, 0, 0);
+    doc.text(`Kazanilan Indirim: -${formatTR(discountTotal)} TL`, 130, finalY + 8);
+    doc.setTextColor(4, 79, 64);
+    doc.setFontSize(16);
+    doc.text(`ODENECEK TUTAR: ${formatTR(grandTotal)} TL`, 130, finalY + 20);
+
+    // 1. PDF'i İndir
+    const fileName = `Siparis_${company.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
     doc.save(fileName);
 
-    // 2. WhatsApp İçin Şık Bir Metin Hazırla
-    const waText = `*YENİ SİPARİŞ GELDİ!* 🛍️\n\n` +
-                   `*Müşteri:* ${name}\n` +
-                   `*İşletme:* ${company || '-'}\n` +
-                   `*Tutar:* ${formatTR(totalAmount)} ₺\n\n` +
-                   `_Siparişin detaylı faturasını (PDF) bu mesaja ekliyorum._`;
+    // 2. WhatsApp Mesajı
+    const waText = `*YENİ TOPTAN SİPARİŞ!* 👑\n\n` +
+                   `*İşletme:* ${company}\n` +
+                   `*Yetkili:* ${name}\n` +
+                   `*Adres:* ${address}\n` +
+                   `*Sipariş Kalem Sayısı:* ${cart.length}\n` +
+                   `*Toplam Tutar:* ${formatTR(grandTotal)} ₺\n\n` +
+                   `_Detaylı PDF faturası sistemden cihaza indirilmiştir, lütfen bu mesaja ekleyerek gönderiniz._`;
 
-    // 3. WhatsApp'ı Aç (Seni Kendi Numarana Yönlendirir, NUMARAYI DEĞİŞTİR)
-    const phone = "905555555555"; // BURAYA KENDİ NUMARANI YAZ
+    // 3. İstenilen Numaraya Yönlendir
+    const phone = "905069012520"; 
     const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText)}`;
     
     setTimeout(() => {
         window.open(waLink, '_blank');
-        cart = []; // Sepeti boşalt
+        cart = []; // Sepeti sıfırla
+        document.getElementById('cus-name').value = '';
+        document.getElementById('cus-company').value = '';
+        document.getElementById('cus-address').value = '';
         updateCartUI();
-        toggleCart();
-    }, 1000); // PDF inmesi için 1 saniye mühlet
+        showPage('home');
+    }, 1500); 
 }
