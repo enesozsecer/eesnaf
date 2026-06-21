@@ -332,7 +332,7 @@ window.completeOrder = async function() {
         catch (error) { hideSpinner(); showPage('home'); }
     } else {
         doc.save(fileName);
-        const phone = "90506012520"; 
+        const phone = "905069012520"; 
         const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText + '\n\nNot: Fatura PDF olarak inmiştir, lütfen sohbete manuel ekleyiniz.')}`;
         window.open(waLink, '_blank');
         hideSpinner(); showPage('home');

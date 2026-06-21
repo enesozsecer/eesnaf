@@ -36,9 +36,18 @@
         </div>
 
         <div id="header-search-area" class="search-bar">
-            <button onclick="openBarcodeScanner()" class="btn-barcode" title="Barkod Okut">📷</button>
-            <input type="text" id="searchInput" placeholder="Ürün veya Barkod ara..."
-                onkeyup="filterRenderedProducts()">
+            <div class="search-input-container">
+                <input type="text" id="searchInput" placeholder="Ürün veya Barkod ara..." onkeyup="filterRenderedProducts()">
+                <button onclick="openBarcodeScanner()" class="btn-barcode-inside" title="Barkod Okut">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="5" width="2" height="14"/>
+                        <rect x="7" y="5" width="1" height="14"/>
+                        <rect x="10" y="5" width="3" height="14"/>
+                        <rect x="15" y="5" width="2" height="14"/>
+                        <rect x="19" y="5" width="2" height="14"/>
+                    </svg>
+                </button>
+            </div>
             <button onclick="forceRefreshData()" class="btn-refresh-icon" title="Verileri Güncelle">🔄</button>
         </div>
 
@@ -192,11 +201,20 @@
     </div>
 
     <footer class="footer">
-        <div class="footer-content">
-            <p><strong>ozsecer soft</strong> tarafından geliştirilmiştir. Copyright © 2026, Tüm Hakları Saklıdır.</p>
-            <p>📍 Merkez / Çorum | 📞 0506 901 25 20</p>
-            <a href="https://wa.me/905060125200" target="_blank" class="btn-whatsapp-support">🟢 WhatsApp Destek</a>
-            <button id="install-btn" class="btn-whatsapp-support" onclick="installAppManual()">📱 Uygulamayı İndir</button>
+        <div class="footer-container">
+            <div class="footer-col footer-left">
+                <p>📍 Merkez / Çorum</p>
+                <p>📞 0506 901 25 20</p>
+            </div>
+            
+            <div class="footer-col footer-center">
+                <p class="copyright"> <strong>ozsecer soft</strong> tarafından geliştirilmiştir.Copyright © 2026, Tüm Hakları Saklıdır.</p>
+            </div>
+            
+            <div class="footer-col footer-right">
+                <a href="https://wa.me/905069012520" target="_blank" class="footer-btn btn-wp">🟢 WhatsApp Destek</a>
+                <button id="install-btn" class="footer-btn btn-inst" onclick="installAppManual()">📱 Uygulamayı İndir</button>
+            </div>
         </div>
     </footer>
 
