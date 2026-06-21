@@ -118,7 +118,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 .product-card:hover .btn-add { background: var(--gold); color: var(--bg-color); }
 
 .error-container { text-align: center; padding: 50px 20px; border: 1px solid #ff6b6b; border-radius: 15px; margin-top: 50px; background: var(--panel-bg);}
-.btn-primary { padding: 12px 25px; background: var(--gold); color: var(--bg-color); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.btn-primary { padding: 5px; background: var(--gold); color: var(--bg-color); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .btn-back { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
 .w-100 { width: 100%; }
 

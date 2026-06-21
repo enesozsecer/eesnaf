@@ -1,3 +1,6 @@
+// ==========================================
+// 1. PWA & KURULUM BİLDİRİMİ
+// ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Başarısız: ', err));
@@ -8,19 +11,41 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    // Otomatik banner'ı da göster (Destekleyen tarayıcılarda)
     document.getElementById('install-banner').style.display = 'flex';
 });
 
-function installApp() {
-    if(deferredPrompt) {
+// Sidebar'daki veya Banner'daki butona tıklandığında çalışır
+window.installAppManual = function() {
+    if (deferredPrompt) {
+        // Android / Chrome / Edge için standart kurulum penceresi
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('Kullanıcı uygulamayı kurdu.');
+            }
             deferredPrompt = null;
             document.getElementById('install-banner').style.display = 'none';
         });
+    } else {
+        // iPhone (iOS) veya zaten uygulamayı kurmuş cihazlar için manuel yönlendirme
+        const isIos = () => {
+          const userAgent = window.navigator.userAgent.toLowerCase();
+          return /iphone|ipad|ipod/.test(userAgent);
+        }
+        
+        if (isIos()) {
+            alert("📱 iPhone'a yüklemek için:\n\nTarayıcının alt kısmındaki 'Paylaş' (Kare ve yukarı ok ⍐) ikonuna dokunun ve menüden 'Ana Ekrana Ekle' (Add to Home Screen) seçeneğini seçin.");
+        } else {
+            alert("✅ Uygulama zaten cihazınızda yüklü olabilir veya tarayıcınız otomatik kurulumu desteklemiyor.\n\nTarayıcı menüsünden (Sağ üstteki 3 nokta) 'Ana Ekrana Ekle' veya 'Uygulamayı Yükle' seçeneğini kullanarak indirebilirsiniz.");
+        }
     }
 }
-function closeInstallBanner() { document.getElementById('install-banner').style.display = 'none'; }
+
+// Banner üzerindeki çarpıya basılırsa kapat
+window.closeInstallBanner = function() { 
+    document.getElementById('install-banner').style.display = 'none'; 
+}
 
 // FIREBASE YAPILANDIRMASI (Burayı Kendi Projenin Ayarlarıyla Değiştir!)
 const firebaseConfig = {
