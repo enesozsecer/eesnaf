@@ -16,6 +16,11 @@
 </head>
 <body>
 
+    <div id="global-spinner" class="spinner-overlay">
+        <div class="spinner"></div>
+        <p id="spinner-text">Veriler Yükleniyor...</p>
+    </div>
+
     <div id="install-banner" class="install-banner" style="display: none;">
         <div class="install-info">
             <img src="img/logo-192.png" alt="Logo" onerror="this.onerror=null; this.style.display='none';">
@@ -31,48 +36,71 @@
     </div>
 
     <header class="header">
-        <div class="logo" onclick="showPage('home')">
-            <img src="img/logo-192.png" alt="E-Esnaf Logo" class="header-logo-img" onerror="this.onerror=null; this.style.display='none';">
-            <span class="logo-text">👑 e-esnaf</span>
+        <div class="header-left">
+            <button class="mobile-filter-toggle" onclick="toggleSidebar()">☰ Filtreler</button>
+            <div class="logo" onclick="showPage('home')">
+                <img src="img/logo-192.png" alt="Logo" class="header-logo-img" onerror="this.onerror=null; this.style.display='none';">
+                <span class="logo-text">e-esnaf</span>
+            </div>
         </div>
+        
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Ürün ara..." onkeyup="searchLocalProducts()">
+            <input type="text" id="searchInput" placeholder="Ürün ara..." onkeyup="filterRenderedProducts()">
+            <button onclick="forceRefreshData()" class="btn-refresh-icon" title="Verileri Güncelle">🔄</button>
         </div>
+
         <div class="cart-btn" onclick="showPage('cart')">
-            🛒 Sepetim <span id="cart-count" class="badge">0</span>
+            🛒 <span class="cart-text">Sepetim</span> <span id="cart-count" class="badge">0</span>
         </div>
     </header>
 
     <div class="main-container">
         <div id="page-home" class="page active">
             <div class="layout-wrapper">
-                <aside class="sidebar">
-                    <h3>Filtreler</h3>
+                
+                <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+                <aside class="sidebar" id="sidebar">
+                    <div class="sidebar-header">
+                        <h3>Filtreler</h3>
+                        <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+                    </div>
+                    
+                    <div class="filter-group checkbox-group">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="filter-discounted" onchange="filterRenderedProducts()">
+                            <span>% Sadece İndirimli Ürünler</span>
+                        </label>
+                    </div>
+
                     <div class="filter-group">
                         <label>Kategori</label>
-                        <select id="filter-category" onchange="fetchProducts(false)">
+                        <select id="filter-category" onchange="filterRenderedProducts()">
                             <option value="">Tümü</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label>Marka</label>
-                        <select id="filter-brand" onchange="fetchProducts(false)">
+                        <select id="filter-brand" onchange="filterRenderedProducts()">
                             <option value="">Tümü</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label>Ürün Grubu</label>
-                        <select id="filter-productGroup" onchange="fetchProducts(false)">
+                        <select id="filter-productGroup" onchange="filterRenderedProducts()">
                             <option value="">Tümü</option>
                         </select>
                     </div>
                 </aside>
 
                 <main class="products-area">
-                    <div class="products-grid" id="products-grid"></div>
-                    <div class="load-more-container">
-                        <button id="btn-load-more" class="btn-primary" onclick="fetchProducts(true)" style="display:none; width: 100%; margin-top: 20px;">Daha Fazla Yükle</button>
+                    <div class="view-options">
+                        <span>Görünüm:</span>
+                        <button class="btn-grid" onclick="changeGrid(2)">2</button>
+                        <button class="btn-grid active" onclick="changeGrid(3)">3</button>
+                        <button class="btn-grid" onclick="changeGrid(4)">4</button>
+                        <button class="btn-grid" onclick="changeGrid(5)">5</button>
                     </div>
+                    <div class="products-grid grid-3" id="products-grid"></div>
                 </main>
             </div>
         </div>
@@ -81,8 +109,8 @@
             <div class="error-container">
                 <h1 style="font-size: 5rem; color: var(--gold);">500</h1>
                 <h2>Bağlantı Hatası</h2>
-                <p>Sunucuya erişilirken bir sorun oluştu. İnternet bağlantınızı kontrol edip tekrar deneyiniz.</p>
-                <button class="btn-primary" style="margin-top:20px;" onclick="location.reload()">Sayfayı Yenile</button>
+                <p>Verilere erişilirken bir sorun oluştu.</p>
+                <button class="btn-primary" style="margin-top:20px;" onclick="forceRefreshData()">Tekrar Dene</button>
             </div>
         </div>
 
@@ -90,7 +118,7 @@
             <button class="btn-back" onclick="showPage('home')">← Alışverişe Dön</button>
             <div class="detail-container">
                 <div class="detail-image-box">
-                    <img id="det-img" src="" alt="Ürün Görseli" onerror="this.onerror=null; this.src='img/logo-512.png'">
+                    <img id="det-img" src="" alt="Ürün" onerror="this.onerror=null; this.src='img/logo-192.png'">
                 </div>
                 <div class="detail-info-box">
                     <h1 id="det-name"></h1>
@@ -101,7 +129,8 @@
                     </div>
                     <div class="detail-actions">
                         <input type="number" id="det-qty" value="1" min="1" class="qty-input">
-                        <button class="btn-primary" id="det-add-btn">Sepete Ekle</button>
+                        <span id="det-unit" class="unit-text">Adet</span>
+                        <button class="btn-primary" id="det-add-btn" style="margin-left: 10px;">Sepete Ekle</button>
                     </div>
                 </div>
             </div>
@@ -117,8 +146,8 @@
                             <thead>
                                 <tr>
                                     <th>Ürün</th>
-                                    <th>Fiyat</th>
-                                    <th>Adet</th>
+                                    <th>Fiyat (Birim)</th>
+                                    <th>Miktar</th>
                                     <th>İndirim</th>
                                     <th>Toplam</th>
                                     <th>Sil</th>
