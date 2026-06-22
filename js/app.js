@@ -12,7 +12,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     document.getElementById('install-banner').style.display = 'flex';
 });
 
-window.installAppManual = function() {
+window.installAppManual = function () {
     if (deferredPrompt) {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('install-banner').style.display = 'none'; });
@@ -22,7 +22,7 @@ window.installAppManual = function() {
         else alert("✅ Uygulama cihazınızda yüklü olabilir veya tarayıcınız desteklemiyor.\n\nMenüden (Sağ üstteki 3 nokta) 'Ana Ekrana Ekle' seçeneği ile indirebilirsiniz.");
     }
 }
-window.closeInstallBanner = function() { document.getElementById('install-banner').style.display = 'none'; }
+window.closeInstallBanner = function () { document.getElementById('install-banner').style.display = 'none'; }
 
 // ==========================================
 // 2. FIREBASE YAPILANDIRMASI (Burayı Doldur!)
@@ -30,7 +30,7 @@ window.closeInstallBanner = function() { document.getElementById('install-banner
 const firebaseConfig = {
     apiKey: "SENIN_API_KEY",
     authDomain: "SENIN_PROJE_ID.firebaseapp.com",
-    projectId: "eesnaf-34bf2", 
+    projectId: "eesnaf-34bf2",
     messagingSenderId: "SENDER_ID",
     appId: "APP_ID"
 };
@@ -42,45 +42,48 @@ const db = firebase.firestore();
 // ==========================================
 const BIRIM = { 1: 'Adet', 2: 'Kilogram', 3: 'Gram', 4: 'Litre', 5: 'Metre', 6: 'Paket', 7: 'Koli' };
 let DB = { Categories: [], Brands: [], ProductGroups: [], Products: [] };
-let cart = [];
+let cart = JSON.parse(localStorage.getItem("eesnaf_cart")) || [];
 let html5QrcodeScanner; // Barkod Tarayıcı Objesi
 
 function formatTR(num) { return Number(num).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function showSpinner(text="Veriler Yükleniyor...") { document.getElementById('spinner-text').innerText = text; document.getElementById('global-spinner').style.display = 'flex'; }
+function showSpinner(text = "Veriler Yükleniyor...") { document.getElementById('spinner-text').innerText = text; document.getElementById('global-spinner').style.display = 'flex'; }
 function hideSpinner() { document.getElementById('global-spinner').style.display = 'none'; }
 
 function showPage(pageId) {
     // 1. Tüm sayfaları gizle, sadece isteneni aktif et
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
-    if(targetPage) targetPage.classList.add('active');
-    
+    if (targetPage) targetPage.classList.add('active');
+
     // 2. Gizlenecek alanları seç
     const searchArea = document.getElementById('header-search-area');
     const filterBtns = document.querySelectorAll('.mobile-filter-toggle'); // Filtre butonları
-    
+
     // 3. Sepet veya Detay sayfasındaysak arama, yenileme ve filtreyi gizle
     if (pageId === 'cart' || pageId === 'detail') {
         if (searchArea) searchArea.style.display = 'none';
         filterBtns.forEach(btn => btn.style.display = 'none');
-        
+
         if (pageId === 'cart') {
             updateCartUI();
         }
     } else {
         // 4. Ana sayfaya dönüldüğünde bunları tekrar görünür yap
         if (searchArea) searchArea.style.display = 'flex';
-        
+
         // Filtre butonunun "display" özelliğini boş bırakıyoruz. 
         // Böylece CSS'teki kurallar devreye girer (Masaüstünde gizli, mobilde görünür kalır).
-        filterBtns.forEach(btn => btn.style.display = ''); 
+        filterBtns.forEach(btn => btn.style.display = '');
     }
 }
 
 // ==========================================
 // 4. VERİ ÇEKME İŞLEMLERİ
 // ==========================================
-window.onload = () => { loadDataWithCache(); };
+window.onload = () => {
+    loadDataWithCache();
+    updateCartIcon();
+};
 
 async function loadDataWithCache() {
     showSpinner("Veriler Hazırlanıyor...");
@@ -94,7 +97,7 @@ async function loadDataWithCache() {
     fetchFromFirebase();
 }
 
-window.forceRefreshData = function() {
+window.forceRefreshData = function () {
     localStorage.removeItem("eesnaf_DB");
     localStorage.removeItem("eesnaf_time");
     fetchFromFirebase();
@@ -125,21 +128,21 @@ function populateFilters() {
     const catSelect = document.getElementById('filter-category');
     const brandSelect = document.getElementById('filter-brand');
     const groupSelect = document.getElementById('filter-productGroup');
-    
+
     catSelect.innerHTML = '<option value="">Tümü</option>'; brandSelect.innerHTML = '<option value="">Tümü</option>'; groupSelect.innerHTML = '<option value="">Tümü</option>';
     DB.Categories.forEach(c => { catSelect.innerHTML += `<option value="${c.Id}">${c.Name}</option>`; });
     DB.Brands.forEach(b => { brandSelect.innerHTML += `<option value="${b.Id}">${b.Name}</option>`; });
     DB.ProductGroups.forEach(g => { groupSelect.innerHTML += `<option value="${g.Id}">${g.Name}</option>`; });
 }
 
-window.toggleSidebar = function() {
+window.toggleSidebar = function () {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
     sidebar.classList.toggle('open');
     overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
 }
 
-window.changeGrid = function(col) {
+window.changeGrid = function (col) {
     document.querySelectorAll('.btn-grid').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById('products-grid').className = `products-grid grid-${col}`;
@@ -148,9 +151,9 @@ window.changeGrid = function(col) {
 // ==========================================
 // 5. BARKOD OKUYUCU FONKSİYONLARI
 // ==========================================
-window.openBarcodeScanner = function() {
+window.openBarcodeScanner = function () {
     document.getElementById('barcode-modal').style.display = 'flex';
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 }
 
@@ -162,15 +165,15 @@ function onScanSuccess(decodedText, decodedResult) {
 
 function onScanFailure(error) { /* Sessizce hataları yoksay */ }
 
-window.closeBarcodeScanner = function() {
-    if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
+window.closeBarcodeScanner = function () {
+    if (html5QrcodeScanner) { html5QrcodeScanner.clear(); }
     document.getElementById('barcode-modal').style.display = 'none';
 }
 
 // ==========================================
 // 6. ÜRÜN FİLTRELEME VE LİSTELEME
 // ==========================================
-window.filterRenderedProducts = function() {
+window.filterRenderedProducts = function () {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = '';
 
@@ -184,23 +187,23 @@ window.filterRenderedProducts = function() {
         // Arama kısmında hem Name (İsim) hem de BarCode (Barkod) sütunlarına bakıyoruz
         const nameMatch = p.Name && p.Name.toLowerCase().includes(q);
         const barcodeMatch = p.BarCode && p.BarCode.toLowerCase().includes(q);
-        
+
         if (q && !nameMatch && !barcodeMatch) return false;
-        if (isDiscounted && !(Number(p.DiscountRate) > 0)) return false; 
+        if (isDiscounted && !(Number(p.DiscountRate) > 0)) return false;
         if (selCat && p.CategoryId !== selCat) return false;
         if (selBrand && p.BrandId !== selBrand) return false;
         if (selGroup && p.ProductGroupId !== selGroup) return false;
         return true;
     });
 
-    if(filteredProducts.length === 0) {
+    if (filteredProducts.length === 0) {
         grid.innerHTML = '<p style="color:var(--gold); grid-column: 1 / -1;">Bu filtrelere veya barkoda uygun ürün bulunamadı.</p>';
         return;
     }
 
     filteredProducts.forEach(p => {
         let rawDiscount = Number(p.DiscountRate);
-        let formattedDiscountText = rawDiscount % 1 === 0 ? rawDiscount.toString() : rawDiscount.toLocaleString('tr-TR', {maximumFractionDigits: 2});
+        let formattedDiscountText = rawDiscount % 1 === 0 ? rawDiscount.toString() : rawDiscount.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
         let discountHtml = rawDiscount > 0 ? `<div class="discount-badge">%${formattedDiscountText} İndirim</div>` : '';
         let oldPriceHtml = rawDiscount > 0 ? `<span class="old-price">${formatTR(p.Price)}₺</span>` : `<span class="old-price"></span>`;
         let imgSrc = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
@@ -233,9 +236,9 @@ window.filterRenderedProducts = function() {
 // ==========================================
 // 7. SEPET İŞLEMLERİ VE SİPARİŞ KONTROLÜ
 // ==========================================
-window.openDetail = function(id) {
+window.openDetail = function (id) {
     const p = DB.Products.find(x => x.Id === id);
-    if(!p) return;
+    if (!p) return;
     document.getElementById('det-img').src = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
     document.getElementById('det-name').innerText = p.Name;
     document.getElementById('det-desc').innerText = p.Description || '';
@@ -247,42 +250,38 @@ window.openDetail = function(id) {
     showPage('detail');
 };
 
-window.addToCart = function(id, qty = 1) {
+window.addToCart = function (id, qty = 1) {
     const p = DB.Products.find(x => x.Id === id);
     if (!p) return;
-    
     const existing = cart.find(x => x.Id === id);
-    if (existing) {
-        existing.qty += Number(qty);
-    } else {
-        cart.push({ ...p, qty: Number(qty) });
-    }
-    
+    if (existing) existing.qty += Number(qty); else cart.push({ ...p, qty: Number(qty) });
+
     updateCartIcon();
-    showToast(); // Bildirimi tetikle
+    saveCartToStorage(); // Hafızayı güncelle
+    showToast();
 };
 
 // YENİ BİLDİRİM FONKSİYONU
-window.showToast = function() {
+window.showToast = function () {
     const toast = document.getElementById('toast');
     toast.classList.add('show');
-    
+
     // 2.5 saniye sonra bildirimi ekrandan kaldır
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 2500); 
+    }, 2500);
 };
 
 // SEPET SAYACI GÜNCELLEMESİ (Toplam Miktar Yerine Kalem Sayısı)
-window.updateCartIcon = function() { 
+window.updateCartIcon = function () {
     // Önceden cart.reduce ile miktarları topluyordu.
     // Şimdi sadece dizinin uzunluğunu (kalem sayısını) alıyor.
-    document.getElementById('cart-count').innerText = cart.length; 
+    document.getElementById('cart-count').innerText = cart.length;
 };
-window.updateCartUI = function() {
+window.updateCartUI = function () {
     const tbody = document.getElementById('cart-items');
     tbody.innerHTML = '';
-    let subTotal = 0; let discountTotal = 0; let grandTotal = 0; 
+    let subTotal = 0; let discountTotal = 0; let grandTotal = 0;
 
     cart.forEach((item, index) => {
         const itemNormalTotal = item.Price * item.qty;
@@ -303,7 +302,13 @@ window.updateCartUI = function() {
                 </td>
                 <td style="color:#ff6b6b;">${itemDiscount > 0 ? '-' + formatTR(itemDiscount) + '₺' : '-'}</td>
                 <td style="font-weight:bold;">${formatTR(itemSaleTotal)}₺</td>
-                <td><button class="btn-remove" onclick="removeFromCart(${index})">✕</button></td>
+                <td style="text-align: center;">
+                    <button class="btn-trash" onclick="removeFromCart(${index})" title="Sepetten Çıkar">
+                        <svg viewBox="0 0 448 512" width="18" height="18" fill="currentColor">
+                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-30.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/>
+                        </svg>
+                    </button>
+                </td>
             </tr>
         `;
     });
@@ -314,12 +319,22 @@ window.updateCartUI = function() {
     updateCartIcon();
 };
 
-window.updateQty = function(index, val) { if(val < 1) val = 1; cart[index].qty = Number(val); updateCartUI(); };
-window.removeFromCart = function(index) { cart.splice(index, 1); updateCartUI(); };
+window.updateQty = function (index, val) {
+    if (val < 1) val = 1;
+    cart[index].qty = Number(val);
+    updateCartUI();
+    saveCartToStorage(); // Hafızayı güncelle
+};
 
-window.completeOrder = async function() {
+window.removeFromCart = function (index) {
+    cart.splice(index, 1);
+    updateCartUI();
+    saveCartToStorage(); // Hafızayı güncelle
+};
+
+window.completeOrder = async function () {
     if (cart.length === 0) return alert("Sepetiniz boş!");
-    
+
     // MİNİMUM 5000₺ KONTROLÜ
     const grandTotalCheck = cart.reduce((sum, item) => sum + (item.SalePrice * item.qty), 0);
     if (grandTotalCheck < 5000) {
@@ -329,9 +344,9 @@ window.completeOrder = async function() {
     const name = document.getElementById('cus-name').value.trim();
     const company = document.getElementById('cus-company').value.trim();
     const address = document.getElementById('cus-address').value.trim();
-    
+
     if (!name || !company || !address) return alert("Lütfen formdaki tüm alanları doldurunuz!");
-    
+
     showSpinner("Sipariş Hazırlanıyor...");
 
     const { jsPDF } = window.jspdf; const doc = new jsPDF();
@@ -345,7 +360,7 @@ window.completeOrder = async function() {
         const iN = item.Price * item.qty; const iS = item.SalePrice * item.qty; const iD = iN - iS;
         subTotal += iN; discountTotal += iD; grandTotal += iS;
         let unitName = BIRIM[item.UnitId] || 'Adet';
-        return [ item.Name, formatTR(item.Price) + " TL", item.qty.toString() + ' ' + unitName, iD > 0 ? "-" + formatTR(iD) + " TL" : "-", formatTR(iS) + " TL" ];
+        return [item.Name, formatTR(item.Price) + " TL", item.qty.toString() + ' ' + unitName, iD > 0 ? "-" + formatTR(iD) + " TL" : "-", formatTR(iS) + " TL"];
     });
 
     doc.autoTable({ startY: 85, head: [['Urun Adi', 'Liste Fiyat', 'Miktar', 'Indirim', 'Net Tutar']], body: tableData, theme: 'grid', headStyles: { fillColor: [4, 79, 64], textColor: [212, 175, 55] } });
@@ -358,19 +373,27 @@ window.completeOrder = async function() {
     const pdfBlob = doc.output('blob');
     const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
-    cart = []; document.getElementById('cus-name').value = ''; document.getElementById('cus-company').value = ''; document.getElementById('cus-address').value = '';
+    cart = [];
+    saveCartToStorage(); // Sipariş bittiği için hafızadaki sepeti de temizle
+    document.getElementById('cus-name').value = '';
+    document.getElementById('cus-company').value = '';
+    document.getElementById('cus-address').value = '';
     updateCartIcon(); updateCartUI();
 
     const waText = `*YENİ SİPARİŞ!* 👑\nİşletme: ${company}\nTutar: ${formatTR(grandTotal)}₺`;
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: 'Sipariş', text: waText }); hideSpinner(); showPage('home'); } 
+        try { await navigator.share({ files: [file], title: 'Sipariş', text: waText }); hideSpinner(); showPage('home'); }
         catch (error) { hideSpinner(); showPage('home'); }
     } else {
         doc.save(fileName);
-        const phone = "905069012520"; 
+        const phone = "905069012520";
         const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText + '\n\nNot: Fatura PDF olarak inmiştir, lütfen sohbete manuel ekleyiniz.')}`;
         window.open(waLink, '_blank');
         hideSpinner(); showPage('home');
     }
 };
+
+function saveCartToStorage() {
+    localStorage.setItem("eesnaf_cart", JSON.stringify(cart));
+}

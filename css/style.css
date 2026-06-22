@@ -30,7 +30,16 @@ body { background-color: var(--bg-color); color: var(--text-light); }
    ========================================= */
 .header { background: var(--panel-bg); border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; gap: 20px; overflow: visible !important; }
 .logo { font-size: 1.5rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; cursor: pointer; overflow: visible !important; }
-
+.logo-text {
+    font-family: 'Georgia', 'Times New Roman', serif; /* Premium, tırnaklı ve şık bir font */
+    font-size: 1.8rem;
+    font-style: italic;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 1.5px; /* Harfler arasına biraz nefes boşluğu */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4); /* Yazıya derinlik katan 3 boyutlu gölge */
+    transition: transform 0.3s ease;
+}
 /* LOGONUN AŞAĞI SARKMASI İÇİN */
 .header-logo-img { 
     height: 100px; 
@@ -202,7 +211,12 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 @media (max-width: 768px) {
     /* HEADER (Asla alt alta düşmesin) */
     .header { padding: 10px 12px; flex-wrap: nowrap !important; gap: 8px; }
-    .logo-text { display: none; } 
+    .logo-text { 
+        display: inline-block !important; 
+        font-size: 1.2rem; /* Arama çubuğunu sıkıştırmaması için küçültüldü */
+        letter-spacing: 0.5px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    }
     .header-logo-img { height: 70px; margin-bottom: -20px; transform: translateY(2px); }
 
     /* Arama Barı ve Yenile Butonu */
