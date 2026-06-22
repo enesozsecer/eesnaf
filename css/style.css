@@ -261,7 +261,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
    ========================================= */
 
 /* Uyarı Bandı (Min Sipariş & Adres) */
-.top-notice { background: #ff4757; color: white; text-align: center; padding: 10px; font-size: 0.95rem; font-weight: bold; width: 100%; z-index: 99;}
+.top-notice { background: #ff4757; color: white; text-align: center; padding: 10px; font-size: 0.80rem; font-weight: bold; width: 100%; z-index: 99;}
 
 /* Arama Çubuğu Barkod Butonu */
 .search-bar { display: flex; align-items: center; gap: 8px; width: 100%; }
