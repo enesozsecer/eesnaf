@@ -25,10 +25,28 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 .btn-close-install { background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; padding: 5px; }
 
 /* NAVBAR (Yeniden Düzenlendi) */
-.header { background: var(--panel-bg); border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.header-left { display: flex; align-items: center; gap: 15px; }
-.logo { font-size: 1.5rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.header-logo-img { height: 35px; width: auto; object-fit: contain; }
+.header { background: var(--panel-bg); border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; gap: 20px; overflow: visible !important; }
+.header-left { display: flex; align-items: center; gap: 15px; overflow: visible !important; }
+.logo { font-size: 1.5rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; cursor: pointer; overflow: visible !important; }
+
+.header-logo-img { 
+    height: 80px; /* Logoyu devasa yaptık (eski 35px) */
+    width: auto; 
+    object-fit: contain; 
+    
+    /* Search çubuğunu ve diğer elementleri kaydırmaması için sihirli dokunuş */
+    margin-bottom: -45px; 
+    transform: translateY(0px); /* Sadece görüntüyü aşağı sarkıtır, yapıyı bozmaz */
+    
+    z-index: 150;
+    filter: drop-shadow(0px 5px 8px rgba(0, 0, 0, 0.5)); /* Taşma efekti için 3 boyutlu gölge */
+    transition: transform 0.2s ease;
+}
+
+.logo:hover .header-logo-img {
+    transform: translateY(15px) scale(1.05); /* Üzerine gelince göze hoş gelen büyüme */
+}
+
 .mobile-filter-toggle { display: none; background: var(--gold); color: var(--bg-color); border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
 .search-bar { flex: 1; max-width: 450px; position: relative; display: flex; align-items: center; gap: 10px;}
@@ -158,6 +176,16 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     .header { padding: 10px 15px; flex-wrap: wrap; }
     .header-left { width: 100%; justify-content: space-between; margin-bottom: 10px;}
     .mobile-filter-toggle { display: block; }
+
+    /* Mobilde de biraz daha ufak ama yine sarkan bir logo istersen (İsteğe bağlı ayarladım) */
+    .header-logo-img {
+        height: 65px;
+        margin-bottom: -30px;
+        transform: translateY(10px);
+    }
+    .logo:hover .header-logo-img {
+        transform: translateY(10px) scale(1.05);
+    }
     
     .search-bar { max-width: 100%; flex: 1; }
     .cart-btn { margin-left: auto; }
@@ -209,7 +237,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 .footer {
     background: var(--panel-bg);
     border-top: 2px solid var(--gold);
-    padding: 10px 30px;
+    padding: 15px 30px;
     margin-top: auto;
 }
 
@@ -219,43 +247,42 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     align-items: center;
     max-width: 1400px;
     margin: 0 auto;
-    gap: 20px;
+    gap: 15px;
 }
 
 .footer-col {
     flex: 1;
     color: var(--text-muted);
-    font-size: 0.95rem;
 }
 
-/* Sol Sütun Ayarları */
+/* Sol Sütun (Adres ve Telefon) */
 .footer-left {
-    text-align: left;
-    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.95rem;
     font-weight: 500;
 }
 
-/* Orta Sütun Ayarları (Küçük Punto) */
+/* Orta Sütun (Copyright) */
 .footer-center {
     text-align: center;
-    font-size: 0.85rem; /* Punto küçültüldü */
+    font-size: 0.85rem;
     line-height: 1.4;
 }
 .footer-center strong {
     color: var(--gold);
 }
 .footer-center .copyright {
-    font-size: 0.75rem;
-    opacity: 0.75;
-    margin-top: 4px;
+    opacity: 0.85;
 }
 
-/* Sağ Sütun Ayarları */
+/* Sağ Sütun (Butonlar) */
 .footer-right {
     display: flex;
-    flex-direction: row-reverse;
-    align-items: flex-end; /* Butonları sağa yaslar */
-    gap: 8px;
+    flex-direction: row; /* Desktopta yan yana */
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 /* BUTONLARIN BİREBİR AYNI GÖRÜNMESİNİ SAĞLAYAN SIFIRLAMA KODLARI */
@@ -263,7 +290,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 190px; /* İki butonun da genişliği birebir eşitlendi */
+    min-width: 170px;
     padding: 10px 15px;
     font-size: 0.85rem;
     font-weight: bold;
@@ -277,42 +304,51 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     transition: transform 0.2s, background-color 0.2s;
 }
 
-/* Buton Renkleri ve Hover Efektleri */
-.btn-wp {
-    background: #25D366;
-    color: white;
-}
-.btn-wp:hover {
-    background: #1ebe57;
-    transform: translateY(-2px);
-}
+.btn-wp { background: #25D366; color: white; }
+.btn-wp:hover { background: #1ebe57; transform: translateY(-2px); }
 
-.btn-inst {
-    background: #28a745;
-    color: white;
-}
-.btn-inst:hover {
-    background: #218838;
-    transform: translateY(-2px);
-}
+.btn-inst { background: #28a745; color: white; }
+.btn-inst:hover { background: #218838; transform: translateY(-2px); }
 
-/* MOBİL EKRANLARDA ALTA DOĞRU DÜZGÜN SIRALANMA KONTROLÜ */
+/* =========================================
+   MOBİL İÇİN ÖZEL "YATAY" (HORIZONTAL) DÜZEN
+   ========================================= */
 @media (max-width: 768px) {
     .footer {
-        padding: 20px 15px;
+        padding: 15px 10px;
     }
     .footer-container {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
+        flex-direction: column; /* Genel konteyner sütun, ama içleri yatay olacak */
+        gap: 15px;
     }
-    .footer-left, .footer-center, .footer-right {
-        text-align: center;
-        align-items: center;
+    
+    .footer-col {
         width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Mobilde Adres ve Telefonu Yan Yana (Yatay) Gösterir */
+    .footer-left {
+        flex-direction: row;
+        gap: 15px;
+        font-size: 0.85rem;
+    }
+
+    /* Mobilde Butonları Yan Yana (Yatay) Gösterir */
+    .footer-right {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    /* Butonlar ekrana tam oturması için küçülür ve yan yana kalır */
+    .footer-btn {
+        flex: 1; /* Ekranı 50/50 paylaşırlar */
+        min-width: auto;
+        padding: 10px 5px;
+        font-size: 0.75rem; /* Ekrana sığması için font ufalır */
     }
 }
-
 /* =========================================
    ARAMA KUTUSU İÇİ SARI BARKOD BUTONU
    ========================================= */
