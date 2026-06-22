@@ -50,16 +50,30 @@ function showSpinner(text="Veriler Yükleniyor...") { document.getElementById('s
 function hideSpinner() { document.getElementById('global-spinner').style.display = 'none'; }
 
 function showPage(pageId) {
+    // 1. Tüm sayfaları gizle, sadece isteneni aktif et
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById('page-' + pageId).classList.add('active');
+    const targetPage = document.getElementById('page-' + pageId);
+    if(targetPage) targetPage.classList.add('active');
     
-    // Sepet sayfasındayken Arama ve Barkod alanını GİZLE
+    // 2. Gizlenecek alanları seç
     const searchArea = document.getElementById('header-search-area');
-    if (pageId === 'cart') {
-        searchArea.style.display = 'none';
-        updateCartUI();
+    const filterBtns = document.querySelectorAll('.mobile-filter-toggle'); // Filtre butonları
+    
+    // 3. Sepet veya Detay sayfasındaysak arama, yenileme ve filtreyi gizle
+    if (pageId === 'cart' || pageId === 'detail') {
+        if (searchArea) searchArea.style.display = 'none';
+        filterBtns.forEach(btn => btn.style.display = 'none');
+        
+        if (pageId === 'cart') {
+            updateCartUI();
+        }
     } else {
-        searchArea.style.display = 'flex';
+        // 4. Ana sayfaya dönüldüğünde bunları tekrar görünür yap
+        if (searchArea) searchArea.style.display = 'flex';
+        
+        // Filtre butonunun "display" özelliğini boş bırakıyoruz. 
+        // Böylece CSS'teki kurallar devreye girer (Masaüstünde gizli, mobilde görünür kalır).
+        filterBtns.forEach(btn => btn.style.display = ''); 
     }
 }
 
@@ -236,13 +250,35 @@ window.openDetail = function(id) {
 window.addToCart = function(id, qty = 1) {
     const p = DB.Products.find(x => x.Id === id);
     if (!p) return;
+    
     const existing = cart.find(x => x.Id === id);
-    if (existing) existing.qty += Number(qty); else cart.push({ ...p, qty: Number(qty) });
+    if (existing) {
+        existing.qty += Number(qty);
+    } else {
+        cart.push({ ...p, qty: Number(qty) });
+    }
+    
     updateCartIcon();
+    showToast(); // Bildirimi tetikle
 };
 
-window.updateCartIcon = function() { document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + item.qty, 0); };
+// YENİ BİLDİRİM FONKSİYONU
+window.showToast = function() {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    
+    // 2.5 saniye sonra bildirimi ekrandan kaldır
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2500); 
+};
 
+// SEPET SAYACI GÜNCELLEMESİ (Toplam Miktar Yerine Kalem Sayısı)
+window.updateCartIcon = function() { 
+    // Önceden cart.reduce ile miktarları topluyordu.
+    // Şimdi sadece dizinin uzunluğunu (kalem sayısını) alıyor.
+    document.getElementById('cart-count').innerText = cart.length; 
+};
 window.updateCartUI = function() {
     const tbody = document.getElementById('cart-items');
     tbody.innerHTML = '';
@@ -253,28 +289,44 @@ window.updateCartUI = function() {
         const itemSaleTotal = item.SalePrice * item.qty;
         const itemDiscount = itemNormalTotal - itemSaleTotal;
         subTotal += itemNormalTotal; discountTotal += itemDiscount; grandTotal += itemSaleTotal;
+        
         let unitName = BIRIM[item.UnitId] || 'Adet';
+        
+        // Eğer indirim varsa, toplam fiyatın hemen altında kırmızıyla indirim tutarını gösterecek HTML
+        let discountText = itemDiscount > 0 ? `<br><span style="font-size:0.8rem; color:#ff6b6b;">İndirim: -${formatTR(itemDiscount)} ₺</span>` : '';
 
         tbody.innerHTML += `
             <tr>
                 <td style="font-weight:bold; color:var(--gold);">${item.Name}</td>
-                <td><span style="text-decoration:line-through; font-size:0.8rem; color:#ff6b6b;">${item.DiscountRate > 0 ? formatTR(item.Price) : ''}</span><br>${formatTR(item.SalePrice)}₺ <span style="font-size:0.8rem; color:var(--text-muted)">/ ${unitName}</span></td>
-                <td>
-                    <div class="cart-qty-wrapper">
-                        <input type="number" value="${item.qty}" min="1" onchange="updateQty(${index}, this.value)">
-                        <span style="font-size:0.9rem;">${unitName}</span>
-                    </div>
+
+                <td style="text-align: center;">
+                    <input type="number" value="${item.qty}" min="1" onchange="updateQty(${index}, this.value)" style="width: 55px; padding: 5px; text-align: center; border-radius: 5px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light);"><br>
+                    <span style="font-size:0.8rem; color:var(--text-muted)">/ ${unitName}</span>
                 </td>
-                <td style="color:#ff6b6b;">${itemDiscount > 0 ? '-' + formatTR(itemDiscount) + '₺' : '-'}</td>
-                <td style="font-weight:bold;">${formatTR(itemSaleTotal)}₺</td>
-                <td><button class="btn-remove" onclick="removeFromCart(${index})">✕</button></td>
+
+                <td style="font-weight:bold;">
+                    ${formatTR(itemNormalTotal)} ₺
+                </td>
+                
+                <td style="font-weight:bold;">
+                    ${formatTR(itemSaleTotal)} ₺
+                    ${discountText}
+                </td>
+                
+                <td style="text-align: center;">
+                    <button class="btn-trash" onclick="removeFromCart(${index})" title="Sepetten Çıkar">
+                        <svg viewBox="0 0 448 512" width="18" height="18" fill="currentColor">
+                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-30.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/>
+                        </svg>
+                    </button>
+                </td>
             </tr>
         `;
     });
 
-    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + "₺";
-    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + "₺";
-    document.getElementById('summary-total').innerText = formatTR(grandTotal) + "₺";
+    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + " ₺";
+    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + " ₺";
+    document.getElementById('summary-total').innerText = formatTR(grandTotal) + " ₺";
     updateCartIcon();
 };
 
