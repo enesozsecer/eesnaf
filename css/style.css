@@ -146,12 +146,12 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 .product-card:hover .btn-add { background: var(--gold); color: var(--bg-color); }
 
 .error-container { text-align: center; padding: 50px 20px; border: 1px solid #ff6b6b; border-radius: 15px; margin-top: 50px; background: var(--panel-bg);}
-.btn-primary { padding: 5px; background: var(--panel-bg); color: var(--gold); border: 1px solid; border-radius: 17px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.btn-primary { padding: 10px; background: var(--gold); color: var(--panel-bg); border: 1px solid; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .btn-back { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
 .w-100 { width: 100%; }
 .btn-primary:hover {
-    background-color: var(--gold-hover); /* Üzerine gelince sarı renk koyulaşır/değişir */
-    color:var(--bg-color);
+    background-color: var(--panel-bg); /* Üzerine gelince sarı renk koyulaşır/değişir */
+    color:var(--gold);
     transform: translateY(-2px); /* Buton hafifçe yukarı yükselir */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Butonun altına derinlik katan hafif gölge gelir */
 }
@@ -173,7 +173,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 .detail-price-area .new-price { font-size: 2.5rem; color: var(--text-light); }
 .detail-actions { display: flex; gap: 15px; align-items: center; margin-top: 20px;}
 .qty-input { width: 80px; padding: 12px; font-size: 1.2rem; text-align: center; border-radius: 8px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light); }
-.unit-text { font-size: 1.2rem; color: var(--gold); font-weight: bold; }
+.unit-text { font-size: 1.2rem; color: var(--gold); }
 
 /* SEPET */
 .cart-layout { display: flex; gap: 30px; flex-wrap: wrap;}
@@ -236,7 +236,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     
     /* Footer Yatay Düzen */
     .footer { padding: 15px 10px; }
-    .footer-container { flex-direction: column; gap: 15px; }
+    .footer-container { flex-direction: column; gap: 5px; }
     .footer-col { width: 100%; display: flex; justify-content: center; }
     .footer-left { flex-direction: row; gap: 15px; font-size: 0.85rem; }
     .footer-right { flex-direction: row; gap: 10px; }
@@ -268,7 +268,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
    YENİ YATAY VE MOBİL UYUMLU FOOTER
    ========================================= */
 .footer { background: var(--panel-bg); border-top: 2px solid var(--gold); padding: 15px 30px; margin-top: auto; }
-.footer-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; gap: 15px; }
+.footer-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; gap: 5px; }
 .footer-col { flex: 1; color: var(--text-muted); }
 .footer-left { display: flex; flex-direction: column; gap: 5px; font-size: 0.95rem; font-weight: 500; }
 .footer-center { text-align: center; font-size: 0.85rem; line-height: 1.4; }
@@ -290,7 +290,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     }
     .footer-container {
         flex-direction: column; /* Genel konteyner sütun, ama içleri yatay olacak */
-        gap: 15px;
+        gap: 5px;
     }
     
     .footer-col {

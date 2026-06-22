@@ -76,7 +76,7 @@
     </div>
 
     <div class="main-container">
-        <button class="mobile-filter-toggle" onclick="toggleSidebar()">☰ Filtreleri Aç</button>
+        <button class="mobile-filter-toggle" onclick="toggleSidebar()">☰ Filtre</button>
         <div id="page-home" class="page active">
             <div class="layout-wrapper">
                 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -150,8 +150,8 @@
                     </div>
                     <div class="detail-actions">
                         <input type="number" id="det-qty" value="1" min="1" class="qty-input">
-                        <span id="det-unit" class="unit-text">Adet</span>
-                        <button class="btn-primary" id="det-add-btn" style="margin-left: 10px;">Sepete Ekle</button>
+                        <span id="det-unit" class="unit-text"> / Adet</span>
+                        <button class="btn-primary" id="det-add-btn" style="margin-left: 40px;">Sepete Ekle</button>
                     </div>
                 </div>
             </div>
@@ -167,10 +167,11 @@
                             <thead>
                                 <tr>
                                     <th>Ürün</th>
-                                    <th style="text-align: center;">Miktar</th>
-                                    <th>Birim Fiyat</th>
-                                    <th>Toplam Tutar</th>
-                                    <th style="text-align: center;">Sil</th>
+                                    <th>Fiyat (Birim)</th>
+                                    <th>Miktar</th>
+                                    <th>İndirim</th>
+                                    <th>Toplam</th>
+                                    <th>Sil</th>
                                 </tr>
                             </thead>
                             <tbody id="cart-items"></tbody>
@@ -219,7 +220,7 @@
                 <span>📞 0506 901 25 20</span>
             </div>
             <div class="footer-col footer-center">
-                <p class="copyright"><strong>ozsecer soft</strong> tarafından geliştirilmiştir. Copyright © 2026, Tüm
+                <p class="copyright"><strong>ozsecersoft</strong> tarafından geliştirilmiştir. Copyright © 2026, Tüm
                     Hakları Saklıdır.</p>
             </div>
             <div class="footer-col footer-right">

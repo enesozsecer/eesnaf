@@ -241,7 +241,7 @@ window.openDetail = function(id) {
     document.getElementById('det-desc').innerText = p.Description || '';
     document.getElementById('det-old-price').innerText = Number(p.DiscountRate) > 0 ? formatTR(p.Price) + "₺" : "";
     document.getElementById('det-price').innerText = formatTR(p.SalePrice) + "₺";
-    document.getElementById('det-unit').innerText = BIRIM[p.UnitId] || 'Adet';
+    document.getElementById('det-unit').innerText = ' / ' + BIRIM[p.UnitId] || 'Adet';
     document.getElementById('det-qty').value = 1;
     document.getElementById('det-add-btn').onclick = () => { addToCart(p.Id, document.getElementById('det-qty').value); showPage('cart'); };
     showPage('detail');
@@ -289,44 +289,28 @@ window.updateCartUI = function() {
         const itemSaleTotal = item.SalePrice * item.qty;
         const itemDiscount = itemNormalTotal - itemSaleTotal;
         subTotal += itemNormalTotal; discountTotal += itemDiscount; grandTotal += itemSaleTotal;
-        
         let unitName = BIRIM[item.UnitId] || 'Adet';
-        
-        // Eğer indirim varsa, toplam fiyatın hemen altında kırmızıyla indirim tutarını gösterecek HTML
-        let discountText = itemDiscount > 0 ? `<br><span style="font-size:0.8rem; color:#ff6b6b;">İndirim: -${formatTR(itemDiscount)} ₺</span>` : '';
 
         tbody.innerHTML += `
             <tr>
                 <td style="font-weight:bold; color:var(--gold);">${item.Name}</td>
-
-                <td style="text-align: center;">
-                    <input type="number" value="${item.qty}" min="1" onchange="updateQty(${index}, this.value)" style="width: 55px; padding: 5px; text-align: center; border-radius: 5px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light);"><br>
-                    <span style="font-size:0.8rem; color:var(--text-muted)">/ ${unitName}</span>
+                <td><span style="text-decoration:line-through; font-size:0.8rem; color:#ff6b6b;">${item.DiscountRate > 0 ? formatTR(item.Price) : ''}</span><br>${formatTR(item.SalePrice)}₺ <span style="font-size:0.8rem; color:var(--text-muted)">/ ${unitName}</span></td>
+                <td>
+                    <div class="cart-qty-wrapper">
+                        <input type="number" value="${item.qty}" min="1" onchange="updateQty(${index}, this.value)">
+                        <span style="font-size:0.9rem;">${unitName}</span>
+                    </div>
                 </td>
-
-                <td style="font-weight:bold;">
-                    ${formatTR(itemNormalTotal)} ₺
-                </td>
-                
-                <td style="font-weight:bold;">
-                    ${formatTR(itemSaleTotal)} ₺
-                    ${discountText}
-                </td>
-                
-                <td style="text-align: center;">
-                    <button class="btn-trash" onclick="removeFromCart(${index})" title="Sepetten Çıkar">
-                        <svg viewBox="0 0 448 512" width="18" height="18" fill="currentColor">
-                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-30.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/>
-                        </svg>
-                    </button>
-                </td>
+                <td style="color:#ff6b6b;">${itemDiscount > 0 ? '-' + formatTR(itemDiscount) + '₺' : '-'}</td>
+                <td style="font-weight:bold;">${formatTR(itemSaleTotal)}₺</td>
+                <td><button class="btn-remove" onclick="removeFromCart(${index})">✕</button></td>
             </tr>
         `;
     });
 
-    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + " ₺";
-    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + " ₺";
-    document.getElementById('summary-total').innerText = formatTR(grandTotal) + " ₺";
+    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + "₺";
+    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + "₺";
+    document.getElementById('summary-total').innerText = formatTR(grandTotal) + "₺";
     updateCartIcon();
 };
 
