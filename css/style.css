@@ -29,7 +29,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
    HEADER VE SARKAN LOGO TASARIMI
    ========================================= */
 .header { background: var(--panel-bg); border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; gap: 20px; overflow: visible !important; }
-.logo { font-size: 1.5rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; cursor: pointer; overflow: visible !important; }
+.logo { font-size: 1.5rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 0px; cursor: pointer; overflow: visible !important; }
 .logo-text {
     font-family: 'Georgia', 'Times New Roman', serif; /* Premium, tırnaklı ve şık bir font */
     font-size: 1.8rem;
@@ -261,7 +261,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
    ========================================= */
 
 /* Uyarı Bandı (Min Sipariş & Adres) */
-.top-notice { background: #ff4757; color: white; text-align: center; padding: 10px; font-size: 0.80rem; font-weight: bold; width: 100%; z-index: 99;}
+.top-notice { background: #ff4757; color: white; text-align: center; padding: 10px; font-size: 0.70rem; font-weight: bold; width: 100%; z-index: 99;}
 
 /* Arama Çubuğu Barkod Butonu */
 .search-bar { display: flex; align-items: center; gap: 8px; width: 100%; }
