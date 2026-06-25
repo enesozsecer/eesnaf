@@ -9,7 +9,10 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    document.getElementById('install-banner').style.display = 'flex';
+    const installBanner = document.getElementById('install-banner');
+    if (installBanner) {
+        installBanner.style.display = 'flex';
+    }
 });
 
 window.installAppManual = function () {
@@ -43,6 +46,7 @@ const db = firebase.firestore();
 const BIRIM = { 1: 'Adet', 2: 'Kilogram', 3: 'Gram', 4: 'Litre', 5: 'Metre', 6: 'Paket', 7: 'Koli' };
 let DB = { Categories: [], Brands: [], ProductGroups: [], Products: [] };
 let cart = JSON.parse(localStorage.getItem("eesnaf_cart")) || [];
+let favorites = JSON.parse(localStorage.getItem("eesnaf_favorites")) || [];
 let html5QrcodeScanner; // Barkod Tarayıcı Objesi
 
 function formatTR(num) { return Number(num).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -60,13 +64,10 @@ function showPage(pageId) {
     const filterBtns = document.querySelectorAll('.mobile-filter-toggle'); // Filtre butonları
 
     // 3. Sepet veya Detay sayfasındaysak arama, yenileme ve filtreyi gizle
-    if (pageId === 'cart' || pageId === 'detail') {
+    if (pageId === 'cart' || pageId === 'detail' || pageId === 'favorites') {
         if (searchArea) searchArea.style.display = 'none';
         filterBtns.forEach(btn => btn.style.display = 'none');
-
-        if (pageId === 'cart') {
-            updateCartUI();
-        }
+        if (pageId === 'cart') updateCartUI();
     } else {
         // 4. Ana sayfaya dönüldüğünde bunları tekrar görünür yap
         if (searchArea) searchArea.style.display = 'flex';
@@ -83,6 +84,18 @@ function showPage(pageId) {
 window.onload = () => {
     loadDataWithCache();
     updateCartIcon();
+};
+
+// İkon Güncelleme Fonksiyonu
+window.updateFavIcon = function () {
+    document.getElementById('fav-count').innerText = favorites.length;
+};
+
+// Mevcut window.onload'un içine ekle:
+window.onload = () => {
+    loadDataWithCache();
+    updateCartIcon();
+    updateFavIcon(); // YENİ EKLENDİ
 };
 
 async function loadDataWithCache() {
@@ -212,6 +225,11 @@ window.filterRenderedProducts = function () {
         // Ön Yüzdeki Kartlara Miktar (NumberBox) eklendi
         grid.innerHTML += `
             <div class="product-card" onclick="openDetail('${p.Id}')">
+            <button class="card-fav-btn ${favorites.includes(p.Id) ? 'active' : ''}" onclick="toggleFavoriteInline('${p.Id}', event)" title="Favorilere Ekle">
+                    <svg viewBox="0 0 512 512" width="16" height="16" fill="currentColor">
+                        <path d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"/>
+                    </svg>
+                </button>
                 <div class="image-wrapper">
                     ${discountHtml}
                     <img src="${imgSrc}" class="product-img" onerror="this.onerror=null; this.src='img/logo-192.png'">
@@ -237,17 +255,82 @@ window.filterRenderedProducts = function () {
 // 7. SEPET İŞLEMLERİ VE SİPARİŞ KONTROLÜ
 // ==========================================
 window.openDetail = function (id) {
-    const p = DB.Products.find(x => x.Id === id);
-    if (!p) return;
-    document.getElementById('det-img').src = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
-    document.getElementById('det-name').innerText = p.Name;
-    document.getElementById('det-desc').innerText = p.Description || '';
-    document.getElementById('det-old-price').innerText = Number(p.DiscountRate) > 0 ? formatTR(p.Price) + "₺" : "";
-    document.getElementById('det-price').innerText = formatTR(p.SalePrice) + "₺";
-    document.getElementById('det-unit').innerText = ' / ' + BIRIM[p.UnitId] || 'Adet';
-    document.getElementById('det-qty').value = 1;
-    document.getElementById('det-add-btn').onclick = () => { addToCart(p.Id, document.getElementById('det-qty').value); showPage('cart'); };
-    showPage('detail');
+    try {
+        const p = DB.Products.find(x => x.Id === id);
+        if (!p) return;
+
+        // 1. Veritabanı (DB) Güvenliği: Tablo yoksa bile sistem çökmez!
+        const brandObj = (DB.Brands || []).find(b => b.Id === p.BrandId);
+        const groupObj = (DB.ProductGroups || []).find(g => g.Id === p.ProductGroupId);
+        const brandName = brandObj ? brandObj.Name : 'Belirtilmemiş';
+        const groupName = groupObj ? groupObj.Name : 'Belirtilmemiş';
+
+        // 2. Fiyat Hesaplamaları
+        const salePrice = Number(p.SalePrice) || 0;
+        const cashPrice = salePrice * 0.99;
+
+        // 3. HTML Güvenliği: "Eleman yoksa pas geç" yardımcıları (null hatasını engeller)
+        const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+        const setText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
+
+        const imgEl = document.getElementById('det-img');
+        if (imgEl) imgEl.src = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
+
+        setText('det-name', p.Name);
+        setHtml('det-brand', `Marka: <strong>${brandName}</strong>`);
+        setHtml('det-group', `Ürün Grubu: <strong>${groupName}</strong>`);
+        setText('det-old-price', Number(p.DiscountRate) > 0 ? formatTR(p.Price) + " ₺" : "");
+        setText('det-price', formatTR(salePrice) + " ₺");
+        setHtml('det-cash-credit', `<strong>Birim Fiyat:</strong><br>(Kredi Kartı: ${formatTR(salePrice)} ₺ / Nakit: <span style="color:#25D366; font-weight:bold;">${formatTR(cashPrice)} ₺</span>)`);
+        setText('det-desc', p.Description || 'Bu ürün için detaylı açıklama girilmemiştir.');
+        setText('det-unit', typeof BIRIM !== 'undefined' ? (BIRIM[p.UnitId] || 'Adet') : 'Adet');
+
+        const qtyEl = document.getElementById('det-qty');
+        if (qtyEl) qtyEl.value = 1;
+
+        const addBtn = document.getElementById('det-add-btn');
+        if (addBtn) {
+            addBtn.onclick = () => {
+                addToCart(p.Id, qtyEl ? qtyEl.value : 1);
+                showPage('cart');
+            };
+        }
+
+        // 4. Favoriler Güvenliği: favorites değişkeni yanlışlıkla unutulmuşsa baştan oluştur
+        if (typeof favorites === 'undefined') window.favorites = [];
+
+        const favBtn = document.getElementById('det-fav-btn');
+        if (favBtn) {
+            const favText = favBtn.querySelector('span');
+
+            if (favorites.includes(p.Id)) {
+                favBtn.classList.add('active');
+                if (favText) favText.innerText = "Favorilere Eklendi";
+            } else {
+                favBtn.classList.remove('active');
+                if (favText) favText.innerText = "Favorilere Ekle";
+            }
+
+            favBtn.onclick = function () {
+                if (favorites.includes(p.Id)) {
+                    favorites = favorites.filter(fid => fid !== p.Id);
+                    this.classList.remove('active');
+                    if (favText) favText.innerText = "Favorilere Ekle";
+                } else {
+                    favorites.push(p.Id);
+                    this.classList.add('active');
+                    if (favText) favText.innerText = "Favorilere Eklendi";
+                }
+                localStorage.setItem("eesnaf_favorites", JSON.stringify(favorites));
+                if (typeof updateFavIcon === 'function') updateFavIcon();
+            };
+        }
+
+        showPage('detail');
+
+    } catch (error) {
+        console.error("Detay sayfası açılırken kritik hata yakalandı:", error);
+    }
 };
 
 window.addToCart = function (id, qty = 1) {
@@ -397,3 +480,75 @@ window.completeOrder = async function () {
 function saveCartToStorage() {
     localStorage.setItem("eesnaf_cart", JSON.stringify(cart));
 }
+
+window.showFavoritesPage = function() {
+    showPage('favorites');
+    const grid = document.getElementById('favorites-grid');
+    const emptyMsg = document.getElementById('empty-fav-msg');
+    grid.innerHTML = '';
+
+    if (favorites.length === 0) {
+        emptyMsg.style.display = 'block';
+    } else {
+        emptyMsg.style.display = 'none';
+        
+        const favProducts = DB.Products.filter(p => favorites.includes(p.Id));
+
+        favProducts.forEach(p => {
+            // Tamamen favorilere özel, kaymayan yeni HTML bloklarımız
+            grid.innerHTML += `
+                <div class="fav-list-card">
+                    
+                    <div class="fav-img-wrapper" onclick="openDetail('${p.Id}')">
+                        <img src="${p.PicturePath || 'img/logo-192.png'}" onerror="this.onerror=null; this.src='img/logo-192.png'">
+                    </div>
+
+                    <div class="fav-details" onclick="openDetail('${p.Id}')">
+                        <div class="fav-title">${p.Name}</div>
+                        <div class="fav-price">${formatTR(p.SalePrice)} ₺</div>
+                    </div>
+
+                    <button class="fav-remove-btn" onclick="removeFromFavorites('${p.Id}', event)" title="Favorilerden Çıkar">
+                        <svg viewBox="0 0 512 512" width="24" height="24" fill="currentColor">
+                            <path d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"/>
+                        </svg>
+                    </button>
+                    
+                </div>
+            `;
+        });
+    }
+};
+
+// Ürünü favorilerden silen ve tıklamanın detaya gitmesini engelleyen fonksiyon
+window.removeFromFavorites = function(id, event) {
+    if(event) event.stopPropagation(); // Kalbe tıklanınca yanlışlıkla ürün detayına gitmeyi engeller
+    
+    favorites = favorites.filter(fid => fid !== id);
+    localStorage.setItem("eesnaf_favorites", JSON.stringify(favorites));
+    
+    if (typeof updateFavIcon === 'function') updateFavIcon();
+    showFavoritesPage(); // Sildiğimiz an ürün ekrandan kaybolsun diye sayfayı yeniler
+};
+
+window.toggleFavoriteInline = function(id, event) {
+    // Tıklamanın aşağıdaki resme veya karta geçmesini (detay sayfasının açılmasını) engeller
+    if (event) event.stopPropagation(); 
+
+    const btn = event.currentTarget; // Tıklanan kalp butonunu seç
+    
+    // Favori kontrolü yap ve duruma göre sınıfı değiştir
+    if (favorites.includes(id)) {
+        // Zaten favorilerdeyse çıkar
+        favorites = favorites.filter(fid => fid !== id);
+        btn.classList.remove('active');
+    } else {
+        // Favorilerde yoksa ekle
+        favorites.push(id);
+        btn.classList.add('active');
+    }
+    
+    // Değişikliği anında hafızaya kaydet ve sağ üstteki sayacı güncelle
+    localStorage.setItem("eesnaf_favorites", JSON.stringify(favorites));
+    if (typeof updateFavIcon === 'function') updateFavIcon();
+};
