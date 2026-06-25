@@ -393,24 +393,31 @@ window.updateCartUI = function () {
 
     // ... Sepet döngüsü (cart.forEach) bittikten sonraki hesaplama kısmı:
     
-    let uiGrandTotal = 0; // Sepetteki ürünlerin toplam tutarı
+    // ... Sepet döngüsü (cart.forEach) bittikten sonraki hesaplama kısmı:
+    
+    let uiGrandTotal = 0;
     cart.forEach(item => { uiGrandTotal += (item.SalePrice * item.qty); });
     
+    // Kargo kuralı: 1000 TL altındaki her senaryoda (sepet boşken bile) 50 TL'dir.
     let uiShippingFee = 0;
-    // 1000 TL altındaysa ve sepet boş değilse 50 TL kargo yaz
-    if (uiGrandTotal > 0 && uiGrandTotal < 1000) {
+    if (uiGrandTotal < 1000) {
         uiShippingFee = 50;
     }
     
-    let finalPayable = uiGrandTotal + uiShippingFee;
+    // Akıllı Tutar: Sepet boşsa ödenecek tutar 0 kalır, ürün varsa kargo eklenir.
+    let finalPayable = 0;
+    if (uiGrandTotal > 0) {
+        finalPayable = uiGrandTotal + uiShippingFee;
+    }
     
-    // HTML'e yazdırma (ID'leri kendi HTML'ine göre düzenleyebilirsin)
+    // Kargo metnini ekrana basma
     const shippingEl = document.getElementById('ui-shipping-fee');
     if(shippingEl) {
         shippingEl.innerText = uiShippingFee > 0 ? "50,00 ₺" : "Ücretsiz";
         shippingEl.style.color = uiShippingFee > 0 ? "inherit" : "#25D366"; // Ücretsizse yeşil yap
     }
     
+    // Toplam tutarı ekrana basma
     const totalEl = document.getElementById('ui-grand-total');
     if(totalEl) {
         totalEl.innerText = formatTR(finalPayable) + " ₺";
