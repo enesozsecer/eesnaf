@@ -488,7 +488,7 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     display: flex; 
     flex-direction: column; 
     justify-content: space-between; /* Üstteki başlık ve alttaki butonları iki uca iter */
-    padding: 10px 10px 0px 0px;
+    padding: 10px 10px 0px 10px;
 }
 
 .brand-group-text { margin-top: 5px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
@@ -501,8 +501,45 @@ body { background-color: var(--bg-color); color: var(--text-light); }
 /* Aksiyon Butonları ve Kalp */
 .detail-actions { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
 
-.btn-favorite { background: transparent; border: 1px solid #ff4757; color: #ff4757; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; transition: 0.3s; width: fit-content; }
-.btn-favorite:hover, .btn-favorite.active { background: #ff4757; color: white; }
+/* =========================================
+   ÜRÜN DETAY - SADECE KALP İKONU TASARIMI
+   ========================================= */
+.btn-favorite-icon-only {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #b2bec3; /* Başlangıçtaki pasif gri çerçeve rengi */
+    transition: transform 0.2s ease, color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+/* Kalbin içini boşaltıp sadece çerçeve yapıyoruz */
+.btn-favorite-icon-only .heart-svg {
+    fill: transparent; 
+    stroke: currentColor;
+    stroke-width: 40px; /* Çerçeve kalınlığı */
+    transition: fill 0.3s ease;
+}
+
+.btn-favorite-icon-only:hover {
+    transform: scale(1.15); /* Üzerine gelince biraz büyür */
+    color: #ff4757; /* Çerçeve kızarır */
+}
+
+/* Tıklanıp Favorilere eklendiğinde */
+.btn-favorite-icon-only.active {
+    color: #ff4757;
+}
+
+.btn-favorite-icon-only.active .heart-svg {
+    fill: currentColor; /* İçi tamamen kırmızı dolar */
+    stroke: none; /* Çerçeve çizgisi kaybolur */
+}
 
 /* 2 Kolonlu Sevkiyat Alanı */
 .delivery-info { display: flex; justify-content: space-between; gap: 15px; margin-top: 20px; }
@@ -692,4 +729,55 @@ body { background-color: var(--bg-color); color: var(--text-light); }
     .fav-title { font-size: 0.95rem; }
     .fav-price { font-size: 1.05rem; }
     .fav-remove-btn svg { width: 20px; height: 20px; }
+}
+
+/* =========================================
+   YENİ ADRES FORMU STİLLERİ
+   ========================================= */
+.cart-form-container {
+    /* background: var(--panel-bg);
+    border: 1px solid var(--gold);
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px; */
+}
+.cart-form-container h3 {
+    color: var(--gold);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+.form-group label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.cart-form-container input, 
+.cart-form-container select, 
+.cart-form-container textarea {
+    background: var(--bg-color);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    color: var(--text-light);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+.cart-form-container select {
+    cursor: not-allowed; /* Başka seçenek olmadığını belli etmek için kilitli simgesi */
+}
+/* Yan yana durması gereken ikili alanlar */
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+.col-6 {
+    flex: 1;
 }

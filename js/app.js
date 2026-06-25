@@ -281,7 +281,7 @@ window.openDetail = function (id) {
         setHtml('det-group', `Ürün Grubu: <strong>${groupName}</strong>`);
         setText('det-old-price', Number(p.DiscountRate) > 0 ? formatTR(p.Price) + " ₺" : "");
         setText('det-price', formatTR(salePrice) + " ₺");
-        setHtml('det-cash-credit', `<strong>Birim Fiyat:</strong><br>(Kredi Kartı: ${formatTR(salePrice)} ₺ / Nakit: <span style="color:#25D366; font-weight:bold;">${formatTR(cashPrice)} ₺</span>)`);
+        setHtml('det-cash-credit', `<strong>Birim Fiyat:</strong><br>(Kredi Kartı: ${formatTR(salePrice)} ₺ / Nakit: <span>${formatTR(cashPrice)} ₺</span>)`);
         setText('det-desc', p.Description || 'Bu ürün için detaylı açıklama girilmemiştir.');
         setText('det-unit', typeof BIRIM !== 'undefined' ? (BIRIM[p.UnitId] || 'Adet') : 'Adet');
 
@@ -296,36 +296,31 @@ window.openDetail = function (id) {
             };
         }
 
-        // 4. Favoriler Güvenliği: favorites değişkeni yanlışlıkla unutulmuşsa baştan oluştur
+        // 4. Favoriler İkonu Kontrolü (Metinsiz, Sadece İkon)
         if (typeof favorites === 'undefined') window.favorites = [];
-
+        
         const favBtn = document.getElementById('det-fav-btn');
-        if (favBtn) {
-            const favText = favBtn.querySelector('span');
-
+        if(favBtn) {
+            // Sayfa açıldığında favorideyse kırmızı (active) yap
             if (favorites.includes(p.Id)) {
                 favBtn.classList.add('active');
-                if (favText) favText.innerText = "Favorilere Eklendi";
             } else {
                 favBtn.classList.remove('active');
-                if (favText) favText.innerText = "Favorilere Ekle";
             }
-
-            favBtn.onclick = function () {
+            
+            // Tıklama Olayı (Boş <-> Dolu geçişi)
+            favBtn.onclick = function() {
                 if (favorites.includes(p.Id)) {
                     favorites = favorites.filter(fid => fid !== p.Id);
                     this.classList.remove('active');
-                    if (favText) favText.innerText = "Favorilere Ekle";
                 } else {
                     favorites.push(p.Id);
                     this.classList.add('active');
-                    if (favText) favText.innerText = "Favorilere Eklendi";
                 }
                 localStorage.setItem("eesnaf_favorites", JSON.stringify(favorites));
                 if (typeof updateFavIcon === 'function') updateFavIcon();
             };
         }
-
         showPage('detail');
 
     } catch (error) {
@@ -396,9 +391,31 @@ window.updateCartUI = function () {
         `;
     });
 
-    document.getElementById('summary-subtotal').innerText = formatTR(subTotal) + "₺";
-    document.getElementById('summary-discount').innerText = "-" + formatTR(discountTotal) + "₺";
-    document.getElementById('summary-total').innerText = formatTR(grandTotal) + "₺";
+    // ... Sepet döngüsü (cart.forEach) bittikten sonraki hesaplama kısmı:
+    
+    let uiGrandTotal = 0; // Sepetteki ürünlerin toplam tutarı
+    cart.forEach(item => { uiGrandTotal += (item.SalePrice * item.qty); });
+    
+    let uiShippingFee = 0;
+    // 1000 TL altındaysa ve sepet boş değilse 50 TL kargo yaz
+    if (uiGrandTotal > 0 && uiGrandTotal < 1000) {
+        uiShippingFee = 50;
+    }
+    
+    let finalPayable = uiGrandTotal + uiShippingFee;
+    
+    // HTML'e yazdırma (ID'leri kendi HTML'ine göre düzenleyebilirsin)
+    const shippingEl = document.getElementById('ui-shipping-fee');
+    if(shippingEl) {
+        shippingEl.innerText = uiShippingFee > 0 ? "50,00 ₺" : "Ücretsiz";
+        shippingEl.style.color = uiShippingFee > 0 ? "inherit" : "#25D366"; // Ücretsizse yeşil yap
+    }
+    
+    const totalEl = document.getElementById('ui-grand-total');
+    if(totalEl) {
+        totalEl.innerText = formatTR(finalPayable) + " ₺";
+    }
+
     updateCartIcon();
 };
 
@@ -418,63 +435,161 @@ window.removeFromCart = function (index) {
 window.completeOrder = async function () {
     if (cart.length === 0) return alert("Sepetiniz boş!");
 
-    // MİNİMUM 5000₺ KONTROLÜ
-    const grandTotalCheck = cart.reduce((sum, item) => sum + (item.SalePrice * item.qty), 0);
-    if (grandTotalCheck < 5000) {
-        return alert("⚠️ Minimum sipariş tutarı 5000₺'dir.\nLütfen alışverişe devam ederek sepet tutarınızı yükseltiniz.");
-    }
-
     const name = document.getElementById('cus-name').value.trim();
     const company = document.getElementById('cus-company').value.trim();
-    const address = document.getElementById('cus-address').value.trim();
+    const city = document.getElementById('cus-city').value;
+    const district = document.getElementById('cus-district').value;
+    const neighborhood = document.getElementById('cus-neighborhood').value.trim();
+    const street = document.getElementById('cus-street').value.trim();
+    const buildingNo = document.getElementById('cus-building-no').value.trim();
+    const doorNo = document.getElementById('cus-door-no').value.trim();
+    const addressDetail = document.getElementById('cus-address-detail').value.trim();
+    
+    if (!name || !company || !city || !district || !neighborhood || !street || !buildingNo || !doorNo) {
+        return alert("⚠️ Lütfen adres formundaki tüm zorunlu (*) alanları doldurunuz!");
+    }
+    
+    let formattedAddress = `${neighborhood} Mah. ${street} Sk. No:${buildingNo} Daire:${doorNo} ${district} / ${city}`;
+    if (addressDetail) formattedAddress += ` (${addressDetail})`;
 
-    if (!name || !company || !address) return alert("Lütfen formdaki tüm alanları doldurunuz!");
-
-    showSpinner("Sipariş Hazırlanıyor...");
-
-    const { jsPDF } = window.jspdf; const doc = new jsPDF();
-    doc.setFillColor(4, 79, 64); doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(212, 175, 55); doc.setFontSize(24); doc.text("E-ESNAF SIPARIS FORMU", 14, 25);
-    doc.setTextColor(0, 0, 0); doc.setFontSize(11);
-    doc.text(`Tarih: ${new Date().toLocaleString('tr-TR')}`, 14, 50); doc.text(`Musteri: ${name}`, 14, 58); doc.text(`Isletme: ${company}`, 14, 66); doc.text(`Adres: ${address}`, 14, 74);
+    showSpinner("Sipariş WhatsApp'a Aktarılıyor...");
 
     let subTotal = 0; let discountTotal = 0; let grandTotal = 0;
-    const tableData = cart.map(item => {
+    
+    let tableRowsHTML = "";
+    cart.forEach(item => {
         const iN = item.Price * item.qty; const iS = item.SalePrice * item.qty; const iD = iN - iS;
         subTotal += iN; discountTotal += iD; grandTotal += iS;
         let unitName = BIRIM[item.UnitId] || 'Adet';
-        return [item.Name, formatTR(item.Price) + " TL", item.qty.toString() + ' ' + unitName, iD > 0 ? "-" + formatTR(iD) + " TL" : "-", formatTR(iS) + " TL"];
+        
+        tableRowsHTML += `
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${item.Name}</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee;">${formatTR(item.Price)} ₺</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee;">${item.qty} ${unitName}</td>
+                <td style="padding: 12px; text-align: center; color: red; border-bottom: 1px solid #eee;">${iD > 0 ? "-" + formatTR(iD) + " ₺" : "-"}</td>
+                <td style="padding: 12px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">${formatTR(iS)} ₺</td>
+            </tr>
+        `;
     });
 
-    doc.autoTable({ startY: 85, head: [['Urun Adi', 'Liste Fiyat', 'Miktar', 'Indirim', 'Net Tutar']], body: tableData, theme: 'grid', headStyles: { fillColor: [4, 79, 64], textColor: [212, 175, 55] } });
-    const finalY = doc.lastAutoTable.finalY + 15;
-    doc.setFontSize(12); doc.text(`Ara Toplam: ${formatTR(subTotal)} TL`, 130, finalY);
-    doc.setTextColor(255, 0, 0); doc.text(`Kazanilan Indirim: -${formatTR(discountTotal)} TL`, 130, finalY + 8);
-    doc.setTextColor(4, 79, 64); doc.setFontSize(16); doc.text(`ODENECEK TUTAR: ${formatTR(grandTotal)} TL`, 130, finalY + 20);
+    let shippingFee = 0;
+    if (grandTotal > 0 && grandTotal < 1000) shippingFee = 50;
+    let finalTotalToPay = grandTotal + shippingFee;
 
-    const fileName = `Siparis_${company.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
-    const pdfBlob = doc.output('blob');
-    const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+    const invoiceHTML = `
+        <div id="pdf-invoice-template" style="padding: 20px 40px; font-family: Arial, sans-serif; color: #000; width: 800px; background: #fff; box-sizing: border-box;">
+            
+            <div style="background-color: #044F40; padding: 20px; text-align: left; border-radius: 8px 8px 0 0;">
+                <h1 style="color: #D4AF37; margin: 0; font-size: 28px;">E-ESNAF SİPARİŞ FORMU</h1>
+            </div>
+            
+            <div style="margin-top: 25px; font-size: 14px; line-height: 1.8;">
+                <strong>Tarih:</strong> ${new Date().toLocaleString('tr-TR')} <br>
+                <strong>Müşteri:</strong> ${name} <br>
+                <strong>İşletme:</strong> ${company} <br>
+                <strong>Adres:</strong> ${formattedAddress}
+            </div>
+            
+            <table style="width: 100%; margin-top: 30px; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="background-color: #044F40; color: #D4AF37;">
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #044F40;">Ürün Adı</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #044F40;">Liste Fiyatı</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #044F40;">Miktar</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #044F40;">İndirim</th>
+                        <th style="padding: 12px; text-align: right; border-bottom: 2px solid #044F40;">Net Tutar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRowsHTML}
+                </tbody>
+            </table>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 30px; padding-bottom: 40px;">
+                <div style="width: 350px; font-size: 14px; line-height: 2;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Ara Toplam:</span>
+                        <strong>${formatTR(subTotal)} ₺</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Kazanılan İndirim:</span>
+                        <strong style="color: red;">-${formatTR(discountTotal)} ₺</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Kargo Ücreti:</span>
+                        <strong style="${shippingFee > 0 ? 'color: #000;' : 'color: #25D366;'}">${shippingFee > 0 ? formatTR(shippingFee) + ' ₺' : 'Ücretsiz'}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 2px solid #044F40;">
+                        <span style="font-size: 16px; color: #044F40; font-weight: bold;">ÖDENECEK TUTAR:</span> 
+                        <strong style="font-size: 22px; color: #044F40;">${formatTR(finalTotalToPay)} ₺</strong>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    `;
 
-    cart = [];
-    saveCartToStorage(); // Sipariş bittiği için hafızadaki sepeti de temizle
-    document.getElementById('cus-name').value = '';
-    document.getElementById('cus-company').value = '';
-    document.getElementById('cus-address').value = '';
-    updateCartIcon(); updateCartUI();
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = invoiceHTML;
+    
+    // SOLA KAYMA SORUNUNUN ÇÖZÜMÜ BURASI
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.top = '0';
+    tempDiv.style.left = '0'; // Eksi değer iptal edildi, tam köşeye oturtuldu
+    tempDiv.style.width = '800px'; 
+    tempDiv.style.zIndex = '-9999';
+    tempDiv.style.opacity = '0'; // Görünmez yapıldı ki sayfayı bozmasın
+    tempDiv.style.pointerEvents = 'none'; // Tıklamaları engeller
+    document.body.appendChild(tempDiv);
 
-    const waText = `*YENİ SİPARİŞ!* 👑\nİşletme: ${company}\nTutar: ${formatTR(grandTotal)}₺`;
+    // X ve Y eksenindeki kaymaları önlemek için scrollX ve scrollY sıfırlandı
+    const opt = {
+        margin:       0,
+        filename:     `Siparis_${company.replace(/[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ]/g, '_')}_${Date.now()}.pdf`,
+        image:        { type: 'jpeg', quality: 1 },
+        html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 }, 
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: 'Sipariş', text: waText }); hideSpinner(); showPage('home'); }
-        catch (error) { hideSpinner(); showPage('home'); }
-    } else {
-        doc.save(fileName);
-        const phone = "905069012520";
-        const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText + '\n\nNot: Fatura PDF olarak inmiştir, lütfen sohbete manuel ekleyiniz.')}`;
-        window.open(waLink, '_blank');
-        hideSpinner(); showPage('home');
-    }
+    html2pdf().set(opt).from(tempDiv.firstElementChild).outputPdf('blob').then(async (pdfBlob) => {
+        const fileName = opt.filename;
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        document.body.removeChild(tempDiv);
+        cart = [];
+        saveCartToStorage();
+        
+        const inputsToClear = ['cus-name', 'cus-company', 'cus-neighborhood', 'cus-street', 'cus-building-no', 'cus-door-no', 'cus-address-detail'];
+        inputsToClear.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        
+        updateCartIcon(); updateCartUI();
+
+        const waText = `*YENİ SİPARİŞ!* 👑\nİşletme: ${company}\nTutar: ${formatTR(finalTotalToPay)}₺ ${shippingFee > 0 ? '(Kargo Dahil)' : ''}`;
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try { 
+                await navigator.share({ files: [file], title: 'Sipariş Faturası', text: waText }); 
+                hideSpinner(); showPage('home'); 
+            }
+            catch (error) { hideSpinner(); showPage('home'); }
+        } else {
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(pdfBlob);
+            link.download = fileName;
+            link.click();
+            
+            const phone = "905069012520";
+            const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(waText + '\n\nNot: Fatura PDF olarak inmiştir, lütfen sohbete manuel ekleyiniz.')}`;
+            window.open(waLink, '_blank');
+            hideSpinner(); showPage('home');
+        }
+    }).catch(err => {
+        console.error("PDF oluşturulurken hata:", err);
+        alert("Fatura oluşturulurken bir hata oluştu.");
+        if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+        hideSpinner();
+    });
 };
 
 function saveCartToStorage() {
