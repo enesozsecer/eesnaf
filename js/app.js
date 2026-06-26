@@ -692,3 +692,27 @@ window.toggleFavoriteInline = function(id, event) {
     localStorage.setItem("eesnaf_favorites", JSON.stringify(favorites));
     if (typeof updateFavIcon === 'function') updateFavIcon();
 };
+
+// Sıralama menüsünü açıp kapatan fonksiyon
+function toggleSortSidebar() {
+    const sortSidebar = document.getElementById('sort-sidebar');
+    const sortOverlay = document.getElementById('sort-sidebar-overlay');
+    
+    // Sidebar'ın class'larında "open" var mı kontrol et
+    if (sortSidebar.classList.contains('open')) {
+        sortSidebar.classList.remove('open');
+        sortOverlay.style.display = 'none';
+    } else {
+        sortSidebar.classList.add('open');
+        sortOverlay.style.display = 'block';
+    }
+}
+
+// Radyo butonlardan birine tıklandığında menüyü otomatik kapatmak istersen:
+function applySort() {
+    // Burada sıralama işlemlerini (sortRenderedProducts vs.) yapacaksın
+    // ...
+    
+    // Seçim yapıldıktan sonra menü otomatik kapansın:
+    toggleSortSidebar(); 
+}
