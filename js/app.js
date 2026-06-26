@@ -471,11 +471,11 @@ window.completeOrder = async function () {
         
         tableRowsHTML += `
             <tr>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">${item.Name}</td>
-                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee;">${formatTR(item.Price)} ₺</td>
-                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee;">${item.qty} ${unitName}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; color: #000; text-align: left;">${item.Name}</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee; color: #000;">${formatTR(item.Price)} ₺</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee; color: #000;">${item.qty} ${unitName}</td>
                 <td style="padding: 12px; text-align: center; color: red; border-bottom: 1px solid #eee;">${iD > 0 ? "-" + formatTR(iD) + " ₺" : "-"}</td>
-                <td style="padding: 12px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">${formatTR(iS)} ₺</td>
+                <td style="padding: 12px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee; color: #000;">${formatTR(iS)} ₺</td>
             </tr>
         `;
     });
@@ -484,28 +484,29 @@ window.completeOrder = async function () {
     if (grandTotal > 0 && grandTotal < 1000) shippingFee = 50;
     let finalTotalToPay = grandTotal + shippingFee;
 
+    // Dün beğendiğin, o sağ alt detayları kusursuz olan kurumsal fatura şablonu
     const invoiceHTML = `
-        <div id="pdf-invoice-template" style="padding: 20px 40px; font-family: Arial, sans-serif; color: #000; width: 800px; background: #fff; box-sizing: border-box;">
+        <div id="pdf-invoice-template" style="padding: 40px; font-family: Arial, sans-serif; color: #000; width: 800px; background: #fff; box-sizing: border-box; text-align: left;">
             
-            <div style="background-color: #044F40; padding: 20px; text-align: left; border-radius: 8px 8px 0 0;">
-                <h1 style="color: #D4AF37; margin: 0; font-size: 28px;">E-ESNAF SİPARİŞ FORMU</h1>
+            <div style="background-color: #044F40; padding: 20px; text-align: left; border-radius: 6px;">
+                <h1 style="color: #D4AF37; margin: 0; font-size: 26px; font-weight: bold;">E-ESNAF SİPARİŞ FORMU</h1>
             </div>
             
-            <div style="margin-top: 25px; font-size: 14px; line-height: 1.8;">
+            <div style="margin-top: 25px; font-size: 14px; line-height: 1.8; color: #000;">
                 <strong>Tarih:</strong> ${new Date().toLocaleString('tr-TR')} <br>
                 <strong>Müşteri:</strong> ${name} <br>
                 <strong>İşletme:</strong> ${company} <br>
                 <strong>Adres:</strong> ${formattedAddress}
             </div>
             
-            <table style="width: 100%; margin-top: 30px; border-collapse: collapse; font-size: 13px;">
+            <table style="width: 100%; margin-top: 30px; border-collapse: collapse; font-size: 13px; color: #000;">
                 <thead>
-                    <tr style="background-color: #044F40; color: #D4AF37;">
-                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #044F40;">Ürün Adı</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #044F40;">Liste Fiyatı</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #044F40;">Miktar</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #044F40;">İndirim</th>
-                        <th style="padding: 12px; text-align: right; border-bottom: 2px solid #044F40;">Net Tutar</th>
+                    <tr style="background-color: #044F40; color: #D4AF37; font-weight: bold;">
+                        <th style="padding: 12px; text-align: left;">Ürün Adı</th>
+                        <th style="padding: 12px; text-align: center;">Liste Fiyatı</th>
+                        <th style="padding: 12px; text-align: center;">Miktar</th>
+                        <th style="padding: 12px; text-align: center;">İndirim</th>
+                        <th style="padding: 12px; text-align: right;">Net Tutar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -513,52 +514,69 @@ window.completeOrder = async function () {
                 </tbody>
             </table>
             
-            <div style="display: flex; justify-content: flex-end; margin-top: 30px; padding-bottom: 40px;">
-                <div style="width: 350px; font-size: 14px; line-height: 2;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Ara Toplam:</span>
-                        <strong>${formatTR(subTotal)} ₺</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Kazanılan İndirim:</span>
-                        <strong style="color: red;">-${formatTR(discountTotal)} ₺</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Kargo Ücreti:</span>
-                        <strong style="${shippingFee > 0 ? 'color: #000;' : 'color: #25D366;'}">${shippingFee > 0 ? formatTR(shippingFee) + ' ₺' : 'Ücretsiz'}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 2px solid #044F40;">
-                        <span style="font-size: 16px; color: #044F40; font-weight: bold;">ÖDENECEK TUTAR:</span> 
-                        <strong style="font-size: 22px; color: #044F40;">${formatTR(finalTotalToPay)} ₺</strong>
-                    </div>
-                </div>
-            </div>
+            <table style="width: 100%; margin-top: 30px; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 50%;"></td>
+                    <td style="width: 50%;">
+                        <table style="width: 100%; font-size: 14px; line-height: 2; color: #000;">
+                            <tr>
+                                <td style="text-align: left; padding: 2px 0;">Ara Toplam:</td>
+                                <td style="text-align: right; padding: 2px 0;"><strong>${formatTR(subTotal)} ₺</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; padding: 2px 0; color: red;">Kazanılan İndirim:</td>
+                                <td style="text-align: right; padding: 2px 0; color: red;"><strong>-${formatTR(discountTotal)} ₺</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; padding: 2px 0;">Kargo Ücreti:</td>
+                                <td style="text-align: right; padding: 2px 0; ${shippingFee > 0 ? 'color:#000;' : 'color:#25D366;'}"><strong>${shippingFee > 0 ? formatTR(shippingFee) + ' ₺' : 'Ücretsiz'}</strong></td>
+                            </tr>
+                            <tr style="border-top: 2px solid #044F40;">
+                                <td style="text-align: left; padding-top: 12px; font-size: 16px; color: #044F40; font-weight: bold;">ÖDENECEK TUTAR:</td>
+                                <td style="text-align: right; padding-top: 12px; font-size: 22px; color: #044F40; font-weight: bold;">${formatTR(finalTotalToPay)} ₺</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
             
         </div>
     `;
 
+    // Geçici DOM elemanı oluşturma ve tam sıfır noktasına bağlama
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = invoiceHTML;
-    
-    // SOLA KAYMA SORUNUNUN ÇÖZÜMÜ BURASI
     tempDiv.style.position = 'absolute';
     tempDiv.style.top = '0';
-    tempDiv.style.left = '0'; // Eksi değer iptal edildi, tam köşeye oturtuldu
-    tempDiv.style.width = '800px'; 
-    tempDiv.style.zIndex = '-9999';
-    tempDiv.style.opacity = '0'; // Görünmez yapıldı ki sayfayı bozmasın
-    tempDiv.style.pointerEvents = 'none'; // Tıklamaları engeller
+    tempDiv.style.left = '0';
+    tempDiv.style.width = '800px';
+    tempDiv.style.zIndex = '-999999'; // Kullanıcı asla hissetmeyecek
+    tempDiv.style.margin = '0';
+    tempDiv.style.padding = '0';
+    tempDiv.style.boxSizing = 'border-box';
+    tempDiv.style.backgroundColor = '#ffffff';
     document.body.appendChild(tempDiv);
 
-    // X ve Y eksenindeki kaymaları önlemek için scrollX ve scrollY sıfırlandı
+    // SOLA KAYMAYI VE KIRPILMAYI SIFIRLAYAN SİHİRLİ AYARLAR
     const opt = {
         margin:       0,
         filename:     `Siparis_${company.replace(/[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ]/g, '_')}_${Date.now()}.pdf`,
         image:        { type: 'jpeg', quality: 1 },
-        html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 }, 
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false,
+            scrollX: 0, 
+            scrollY: 0,
+            windowWidth: 800,
+            width: 800,
+            x: 0, // KRİTİK AYAR: Canvas çizimini faturanın mutlak sol sıfır noktasından başlatır!
+            y: 0  // KRİTİK AYAR: Canvas çizimini faturanın mutlak üst sıfır noktasından başlatır!
+        }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
+    // Tam isabet hedefleme
     html2pdf().set(opt).from(tempDiv.firstElementChild).outputPdf('blob').then(async (pdfBlob) => {
         const fileName = opt.filename;
         const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
