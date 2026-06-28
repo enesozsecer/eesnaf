@@ -51,19 +51,49 @@ window.removeFromFavorites = function(id, event) {
     window.showFavoritesPage(); 
 }
 
-window.toggleFavoriteInline = function(id, event) {
-    if (event) event.stopPropagation(); 
-    const btn = event.currentTarget; 
+// SAYFADAKİ TÜM FAVORİ BUTONLARINI ANINDA GÜNCELLEYEN SİSTEM
+window.syncFavoriteButtons = function() {
+    document.querySelectorAll('.card-fav-btn, .btn-favorite-icon-only').forEach(btn => {
+        const id = btn.getAttribute('data-fav-id');
+        if (id) {
+            if (favorites.includes(id)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+};
+
+window.removeFromFavorites = function(id, event) {
+    if(event) event.stopPropagation();
     
     const index = favorites.indexOf(id);
     if (index > -1) {
         favorites.splice(index, 1);
-        btn.classList.remove('active');
-    } else {
-        favorites.push(id);
-        btn.classList.add('active');
     }
     
     saveFavoritesToStorage();
     window.updateFavIcon();
+    window.showFavoritesPage(); 
+    
+    // İşlem bitince anasayfadaki kalbi de söndür
+    window.syncFavoriteButtons(); 
+}
+
+window.toggleFavoriteInline = function(id, event) {
+    if (event) event.stopPropagation(); 
+    
+    const index = favorites.indexOf(id);
+    if (index > -1) {
+        favorites.splice(index, 1); // Favoriden çıkar
+    } else {
+        favorites.push(id); // Favoriye ekle
+    }
+    
+    saveFavoritesToStorage();
+    window.updateFavIcon();
+    
+    // Tıklandığı anda anasayfa ve detay sayfasındaki TÜM o ürüne ait kalpleri yak/söndür
+    window.syncFavoriteButtons(); 
 }

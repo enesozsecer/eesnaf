@@ -43,19 +43,19 @@ window.openDetail = function(id) {
 
         const favBtn = document.getElementById('det-fav-btn');
         if(favBtn) {
+            // Butona kimlik veriyoruz
+            favBtn.setAttribute('data-fav-id', p.Id); 
+            
+            // Sayfa açıldığında favorideyken kırmızı yap
             if (favorites.includes(p.Id)) {
                 favBtn.classList.add('active');
             } else {
                 favBtn.classList.remove('active');
             }
             
-            favBtn.onclick = function() {
-                window.toggleFavoriteInline(p.Id, null);
-                if (favorites.includes(p.Id)) {
-                    this.classList.add('active');
-                } else {
-                    this.classList.remove('active');
-                }
+            // Tıklama olayını tamamen ortak sisteme devrediyoruz
+            favBtn.onclick = function(e) {
+                window.toggleFavoriteInline(p.Id, e);
             };
         }
         window.showPage('detail');
