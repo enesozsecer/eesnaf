@@ -79,7 +79,7 @@
     transition: fill 0.3s ease; 
     overflow: visible; /* KESİK KENARLARI KURTARAN KOD */
 }
-.btn-favorite-icon-only:hover { transform: scale(1.15); color: #ff4757; }
+.btn-favorite-icon-only:hover { transform: scale(1.15); }
 .btn-favorite-icon-only.active { color: #ff4757; }
 .btn-favorite-icon-only.active .heart-svg { fill: currentColor !important; stroke: none; }
 
