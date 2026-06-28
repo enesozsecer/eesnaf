@@ -100,3 +100,47 @@ window.toggleSection = function(headerElement) {
     const section = headerElement.parentElement;
     section.classList.toggle('collapsed');
 };
+
+// --- NAVBAR AÇILIR MENÜ (DROPDOWN) FONKSİYONLARI ---
+
+window.toggleNavDropdown = function(event) {
+    event.stopPropagation(); // Tıklamanın dışarı taşıp menüyü geri kapatmasını engeller
+    document.getElementById('nav-dropdown-menu').classList.toggle('show');
+};
+
+window.closeNavDropdown = function() {
+    const menu = document.getElementById('nav-dropdown-menu');
+    if (menu && menu.classList.contains('show')) {
+        menu.classList.remove('show');
+    }
+};
+
+// Sayfanın neresine tıklanırsa tıklansın, menünün dışındaysa menüyü kapat
+document.addEventListener('click', function(event) {
+    const wrapper = document.querySelector('.nav-dropdown-wrapper');
+    if (wrapper && !wrapper.contains(event.target)) {
+        window.closeNavDropdown();
+    }
+});
+
+// --- GECE / GÜNDÜZ MODU SİSTEMİ ---
+
+window.toggleTheme = function(event) {
+    if(event) event.preventDefault();
+    const body = document.body;
+    
+    // light-mode sınıfını ekle/çıkar
+    body.classList.toggle('light-mode');
+    
+    // Durumu LocalStorage'a kaydet (Sayfa yenilense de hatırlar)
+    const isLight = body.classList.contains('light-mode');
+    localStorage.setItem('eesnaf_theme', isLight ? 'light' : 'dark');
+    
+    window.closeNavDropdown();
+};
+
+// Sayfa ilk yüklendiğinde kullanıcının son seçtiği temayı uygula
+const savedTheme = localStorage.getItem('eesnaf_theme');
+if(savedTheme === 'light') {
+    document.body.classList.add('light-mode');
+}

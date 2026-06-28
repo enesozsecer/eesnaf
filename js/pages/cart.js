@@ -32,7 +32,7 @@ window.updateCartUI = function() {
 
         tbody.innerHTML += `
             <tr>
-                <td style="font-weight:bold; color:var(--gold);">${item.Name}</td>
+                <td style="font-weight:bold; color:var(--text-light);">${item.Name}</td>
                 <td><span style="text-decoration:line-through; font-size:0.8rem; color:#ff6b6b;">${item.DiscountRate > 0 ? formatTR(item.Price) : ''}</span><br>${formatTR(item.SalePrice)}₺ <span style="font-size:0.8rem; color:var(--text-muted)">/ ${unitName}</span></td>
                 <td>
                     <div class="cart-qty-wrapper">

@@ -8,6 +8,15 @@
     --text-light: #ffffff;      
     --text-muted: #a8c9c2;      
 }
+/* GECE / GÜNDÜZ MODU (Aydınlık Tema) */
+body.light-mode {
+    --bg-color: #f0f2f5;        
+    --panel-bg: #ffffff;        
+    --text-light: #1c1e21;      
+    --text-muted: #606770;      
+    --gold: #044F40; /* Açık temada altın rengi yerini Koyu Yeşile bırakır, e-esnaf renkleri korunur */
+    --gold-hover: #03362c;
+}
 
 * { 
     box-sizing: border-box; 
@@ -27,6 +36,9 @@ body {
     background-color: var(--bg-color); 
     color: var(--text-light); 
     padding-top: 75px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 button, input[type="button"], input[type="submit"] {
