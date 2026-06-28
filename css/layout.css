@@ -49,7 +49,11 @@
 .main-container { padding: 30px; margin: 0 auto; min-height: 80vh; }
 .layout-wrapper { display: flex; gap: 30px; }
 
-.sidebar { width: 260px; background: var(--panel-bg); padding: 25px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); height: fit-content; transition: 0.3s ease; flex-shrink: 0; }
+.sidebar { position: sticky; 
+    top: 190px;
+    align-self: flex-start; /* KRİTİK: Flex içinde sündürmeyi engeller */
+    /* max-height: calc(100vh - 120px);  */
+    overflow-y: auto; width: 260px; background: var(--panel-bg); padding: 25px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); height: fit-content; transition: 0.3s ease; flex-shrink: 0; }
 .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .sidebar h3 { color: var(--gold); text-transform: uppercase; }
 .close-sidebar { display: none; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
@@ -91,16 +95,21 @@
 }
 /* İçerik Animasyonu */
 .collapsible-content {
-    max-height: 800px; /* İçeriğin sığacağı kadar büyük bir değer */
+    max-height: 350px; /* 800 çok büyüktü, bu değer gecikmeyi önler */
     overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
+    opacity: 1;
+    transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
     padding-top: 10px;
 }
+
 /* Kapanma Durumu Sınıfı */
 .collapsible-section.collapsed .collapsible-content {
     max-height: 0;
+    opacity: 0;
     padding-top: 0;
+    margin-top: 0;
 }
+
 .collapsible-section.collapsed .arrow {
     transform: rotate(-90deg);
 }
@@ -134,12 +143,13 @@
     body { 
         padding-top: 65px; 
     }
-    .header { padding: 10px 12px; flex-wrap: nowrap !important; gap: 8px; }
-    .logo-text { display: none !important; }
+    .header { padding: 7px 12px; flex-wrap: nowrap !important; gap: 8px; }
+    .logo-text.hide-on-home { 
+        display: none !important; 
+    }
     .header-logo-img { height: 70px; margin-bottom: -20px; transform: translateY(2px); }
     .search-bar { flex: 1; max-width: 100%; gap: 6px; }
     .search-input-container input { padding: 8px 40px 8px 12px; font-size: 0.9rem; }
-    .btn-barcode-inside { width: 30px; height: 30px; right: 5px; }
     .btn-barcode-inside svg { width: 16px; height: 16px; }
     .btn-refresh-icon { width: 36px; height: 36px; font-size: 0.9rem; }
     .cart-btn, .fav-nav-btn { padding: 8px 12px; gap: 5px; }
@@ -158,36 +168,18 @@
     .desktop-only-section {
         display: none !important;
     }
-}
-
-@media (max-width: 425px) {
-    .header { padding: 10px 5px !important; gap: 5px !important; flex-wrap: nowrap !important; }
-    .logo { flex-shrink: 1 !important; min-width: 0 !important; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .cart-btn { flex-shrink: 0 !important; min-width: max-content !important; padding: 5px 8px !important; font-size: 0.9rem !important; transform: scale(0.95); }
-    .search-input-container { width: 100% !important; flex-shrink: 1 !important; min-width: 0 !important; }
-}
-
-@media (min-width: 769px) {
-    .mobile-action-bar {
-        display: none !important;
-    }
-}
-
-/* Masaüstünde gizli olanları mobilde gösteriyoruz */
     .mobile-action-bar {
         display: flex;
         gap: 10px; /* Ürün kartlarındaki grid boşluğu ile BİREBİR aynı */
         margin-bottom: 20px;
         width: 100%;
     }
-    
     /* İki buton ekranı tam %50 - %50 paylaşsın */
     .mobile-action-bar > * {
         flex: 1;
         min-width: 0;
     }
-    
-    .mobile-filter-btn, .mobile-sort-select {
+    .mobile-action-btn {
         display: block;
         width: 100%;
         background: var(--gold);
@@ -200,17 +192,26 @@
         cursor: pointer;
         box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         text-align: center;
-        text-align-last: center; /* Select yazısını ortalar */
         outline: none;
+        transition: 0.2s;
     }
+    .mobile-action-btn:active {
+        transform: scale(0.96);
+    }
+}
 
-    /* Native select ok işaretini gizleyip butona benzetir */
-    .mobile-sort-select {
-        appearance: none;
-        -webkit-appearance: none;
-    }
+/* @media (max-width: 425px) {
+    .header { padding: 10px 5px !important; gap: 5px !important; flex-wrap: nowrap !important; }
+    .logo { flex-shrink: 1 !important; min-width: 0 !important; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cart-btn { flex-shrink: 0 !important; min-width: max-content !important; padding: 5px 8px !important; font-size: 0.9rem !important; transform: scale(0.95); }
+    .search-input-container { width: 100% !important; flex-shrink: 1 !important; min-width: 0 !important; }
+} */
 
-    /* Mobilde Sidebarın içindeki masaüstü sıralamayı gizle (Zaten tepede var) */
-    .desktop-sort-group {
-        display: none;
+@media (min-width: 769px) {
+    .mobile-action-bar {
+        display: none !important;
     }
+}
+
+/* Masaüstünde gizli olanları mobilde gösteriyoruz */
+    

@@ -26,7 +26,7 @@
     <header class="header">
         <div class="logo" onclick="showPage('home')">
             <img src="img/logo-192.png" alt="Logo" class="header-logo-img" onerror="this.onerror=null; this.style.display='none';">
-            <span class="logo-text">e-esnaf</span>
+            <span class="logo-text hide-on-home">e-esnaf</span>
         </div>
 
         <div id="header-search-area" class="search-bar">
@@ -77,15 +77,9 @@
     </div>
 
     <div class="main-container">
-        <div class="mobile-action-bar" id="mobile-action-bar">
-            <select id="mobile-sort" class="mobile-sort-select" onchange="window.applySort(this.value)">
-                <option value="default">↕ Sırala</option>
-                <option value="price-asc">Artan Fiyat</option>
-                <option value="price-desc">Azalan Fiyat</option>
-                <option value="az">A'dan Z'ye</option>
-                <option value="za">Z'den A'ya</option>
-            </select>
-            <button class="mobile-filter-btn" onclick="window.toggleSidebar()">☰ Filtrele</button>
+<div class="mobile-action-bar" id="mobile-action-bar">
+            <button class="mobile-action-btn" onclick="window.openSidebarWith('sort')">↕ Sırala</button>
+            <button class="mobile-action-btn" onclick="window.openSidebarWith('filter')">☰ Filtrele</button>
         </div>
         <div id="page-home" class="page active">
             <div class="layout-wrapper">
@@ -95,7 +89,7 @@
                         <button class="close-sidebar" onclick="window.toggleSidebar()">✕</button>
                     </div>
 
-                    <div class="collapsible-section desktop-only-section">
+                    <div class="collapsible-section collapsed" id="sidebar-sort-section">
                         <div class="collapsible-header" onclick="window.toggleSection(this)">
                             <h3>Sıralama</h3>
                             <span class="arrow">▼</span>
@@ -114,7 +108,7 @@
                         </div>
                     </div>
 
-                    <div class="collapsible-section">
+                    <div class="collapsible-section collapsed" id="sidebar-filter-section">
                         <div class="collapsible-header" onclick="window.toggleSection(this)">
                             <h3>Filtreleme</h3>
                             <span class="arrow">▼</span>

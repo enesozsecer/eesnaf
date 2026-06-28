@@ -122,9 +122,11 @@ window.closeBarcodeScanner = function() {
 }
 
 window.applySort = function(val) {
-    // Hem masaüstündeki hem mobildeki kutuyu aynı değere eşitler (Senkronizasyon)
-    document.getElementById('mobile-sort').value = val;
-    document.getElementById('desktop-sort').value = val;
+    // Sadece sidebar içindeki sıralama kutusu kaldı, değerini değiştirip tetikliyoruz.
+    const deskSort = document.getElementById('desktop-sort');
+    if(deskSort) {
+        deskSort.value = val;
+    }
     
     // Verileri anında yeniden sıralayıp ekrana basar
     window.filterRenderedProducts();

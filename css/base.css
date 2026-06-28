@@ -20,7 +20,6 @@
 html, body {
     width: 100% !important;
     max-width: 100% !important;
-    overflow-x: hidden !important;
     position: relative;
 }
 
@@ -60,4 +59,12 @@ button, input[type="button"], input[type="submit"] {
 
 .page { display: none; animation: fadeIn 0.3s ease-in-out; }
 .page.active { display: block; }
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* Sidebar açıkken arkaplanın kaymasını KESİN olarak engeller */
+html.no-scroll, 
+body.no-scroll {
+    overflow: hidden !important;
+    height: 100vh !important; /* Ekran yüksekliğini dondurur */
+    touch-action: none !important; /* Zorlu mobil tarayıcılar için dokunma kilidi */
+}
