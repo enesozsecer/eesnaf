@@ -30,7 +30,34 @@
 .card-qty-input { width: 65px; padding: 8px 5px; border-radius: 8px; border: 1px solid var(--gold); background: var(--bg-color); color: var(--text-light); text-align: center; font-size: 1.1rem; font-weight: bold; flex-shrink: 1; min-width: 0; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
 .btn-add { width: 100%; flex: 1; padding: 10px 0; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .product-card:hover .btn-add { background: var(--gold); color: var(--bg-color); }
+/* --- BUTON VE INPUT YÜKSEKLİK (BOY) EŞİTLEMESİ --- */
 
+/* 1. Miktar Giriş Kutusu (Anasayfa + Detay Sayfası) */
+.card-qty-input {
+    height: 42px !important;
+    padding: 0 5px !important; /* Dikey boşlukları sıfırlayıp ortalamayı tarayıcıya bırakıyoruz */
+    box-sizing: border-box !important;
+}
+
+/* 2. Ana Sayfa: Sepete Ekle / Stokta Yok Butonu */
+.btn-add {
+    height: 42px !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
+
+/* 3. Detay Sayfası: Sepete Ekle Butonu */
+#det-add-btn {
+    height: 42px !important;
+    padding: 0 25px !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
 /* Sepet Sayfası */
 .cart-layout { display: flex; gap: 30px; flex-wrap: wrap;}
 .cart-items-container { flex: 2; background: var(--panel-bg); padding: 25px; border-radius: 15px; min-width: 300px; }
@@ -199,7 +226,16 @@
         width: 100%; 
         min-width: 100%; 
     }
-}
-@media (max-width: 1040px) {
-    
+    /* Mobilde ekranı taşıran masaüstü "min-width" (en az genişlik) sınırlarını sıfırla */
+    .detail-image-box, 
+    .cart-items-container, 
+    .checkout-form {
+        min-width: 0 !important;
+    }
+
+    /* Favoriler sayfasındaki çok uzun ürün isimlerinin taşıp ekranı sağa itmesini engelle */
+    .fav-title {
+        word-break: break-word !important; 
+        overflow-wrap: break-word !important;
+    }
 }

@@ -121,6 +121,9 @@ window.filterRenderedProducts = function () {
         const isOutOfStock = stockVal <= 0;
         const btnText = isOutOfStock ? "Stokta Yok" : "Sepete Ekle";
         const btnClass = isOutOfStock ? "btn-add btn-out-of-stock" : "btn-add";
+        
+        // YENİ: Eğer stokta yoksa miktar kutusu HTML'i boş gelsin
+        const qtyInputHtml = isOutOfStock ? "" : `<input type="number" id="qty-${p.Id}" value="1" min="1" class="card-qty-input">`;
 
         grid.innerHTML += `
             <div class="product-card" onclick="window.openDetail('${p.Id}')">
@@ -141,7 +144,7 @@ window.filterRenderedProducts = function () {
                         <span class="new-price">${formatTR(p.SalePrice)}₺ <span class="unit-suffix">/ ${unitName}</span></span>
                     </div>
                     <div class="card-action-area" onclick="event.stopPropagation();">
-                        <input type="number" id="qty-${p.Id}" value="1" min="1" class="card-qty-input">
+                        ${qtyInputHtml}
                         <button class="${btnClass}" onclick="event.stopPropagation(); window.addToCart('${p.Id}', document.getElementById('qty-${p.Id}') ? document.getElementById('qty-${p.Id}').value : 1)">${btnText}</button>
                     </div>
                 </div>
