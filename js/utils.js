@@ -21,6 +21,8 @@ export function showToast() {
 
 // HTML'den tetiklenen ortak fonksiyonlar
 window.showPage = function(pageId) {
+    window.scrollTo({ top: 0, behavior: 'instant' }); 
+
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
     if (targetPage) targetPage.classList.add('active');

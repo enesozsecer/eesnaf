@@ -117,7 +117,7 @@
 .layout-wrapper { display: flex; gap: 30px; }
 
 .sidebar { position: sticky; 
-    top: 190px;
+    top: 140px;
     align-self: flex-start; /* KRİTİK: Flex içinde sündürmeyi engeller */
     /* max-height: calc(100vh - 120px);  */
     overflow-y: auto; width: 260px; background: var(--panel-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--gold); height: fit-content; transition: 0.3s ease; flex-shrink: 0; }
@@ -250,6 +250,7 @@
     border-radius: 8px !important;
     color: var(--text-light) !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    z-index: 9999 !important;
 }
 .ts-dropdown .active {
     background-color: var(--gold) !important;
