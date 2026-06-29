@@ -205,6 +205,79 @@
 .btn-inst { background: #28a745; color: white; }
 .btn-inst:hover { background: #218838; transform: translateY(-2px); }
 
+/* --- ARAMALI DROPDOWN (TOM SELECT) E-ESNAF TEMASI --- */
+.ts-control {
+    border: 1px solid var(--gold) !important;
+    border-radius: 8px !important;
+    background-color: var(--bg-color) !important;
+    color: var(--text-light) !important;
+    padding: 8px 35px 8px 10px !important;
+    font-size: 0.95rem;
+    display: flex !important;
+    flex-wrap: nowrap !important; /* YENİ: Alt satıra geçmeyi KESİN engeller */
+    align-items: center;
+}
+.ts-control input {
+    color: var(--text-light) !important;
+}
+
+/* YENİ: Seçilen metnin kesilmesi ve sığmazsa üç nokta (...) eklenmesi */
+.ts-control .item {
+    color: var(--text-light) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: calc(100% - 25px); /* Çarpı butonuna yer açar */
+    display: inline-block;
+}
+
+/* YENİ: Çarpı (Temizle) Butonu Tasarımı */
+.ts-control .clear-button {
+    color: var(--text-muted) !important;
+    font-size: 1.2rem;
+    margin-right: 5px;
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+.ts-control .clear-button:hover {
+    color: #ff4757 !important; /* Üzerine gelince şık bir kırmızı olur */
+}
+
+/* --- Açılır Menü Listesi (Dropdown) --- */
+.ts-dropdown {
+    background-color: var(--panel-bg) !important;
+    border: 1px solid var(--gold) !important;
+    border-radius: 8px !important;
+    color: var(--text-light) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+.ts-dropdown .active {
+    background-color: var(--gold) !important;
+    color: var(--bg-color) !important;
+}
+.ts-dropdown .option {
+    padding: 10px;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+/* YENİ: Çarpı (Temizle) Butonu Tasarımı ve Konumu */
+.plugin-clear_button .clear-button {
+    color: var(--text-muted) !important;
+    font-size: 1.2rem;
+    right: 10px !important; /* İnternetten gelen kodu ezip sağdan 10px'e kilitliyoruz */
+    top: 50% !important;
+    transform: translateY(-50%) !important; /* Dikeyde tam ortalıyoruz */
+    transition: 0.2s ease;
+    cursor: pointer;
+    background: transparent !important;
+    z-index: 10; /* Yazının her zaman üstünde tıklanabilir kalsın */
+}
+
+.plugin-clear_button .clear-button:hover {
+    color: #ff4757 !important;
+}
+
 /* Responsive Layout */
 @media (max-width: 768px) {
     body { 
