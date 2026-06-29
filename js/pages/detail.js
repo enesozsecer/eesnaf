@@ -28,7 +28,7 @@ window.openDetail = function (id) {
         setText('det-price', formatTR(salePrice) + "₺");
         setHtml('det-cash-credit', `<strong>Birim Fiyat:</strong><br>(Kredi Kartı: ${formatTR(salePrice)}₺ / Nakit: <span>${formatTR(cashPrice)}₺</span>)`);
         setText('det-desc', p.Description || 'Bu ürün için detaylı açıklama girilmemiştir.');
-        setText('det-unit', typeof BIRIM !== 'undefined' ? (BIRIM[p.UnitId] || 'Adet') : 'Adet');
+        setText('det-unit', typeof BIRIM !== 'undefined' ? ('/ ' + BIRIM[p.UnitId] || ' / Adet') : ' / Adet');
 
         const qtyEl = document.getElementById('det-qty');
         if (qtyEl) qtyEl.value = 1;
