@@ -6,8 +6,28 @@ import { DB } from '../store.js';
 window.addToCart = function(id, qty = 1) {
     const p = DB.Products.find(x => x.Id === id);
     if (!p) return;
+    
+    // Değişken adını StockQuantity yaptık
+    const stock = Number(p.StockQuantity) || 0;
+    
+    // STOK 0 İSE KESİNLİKLE ENGELLE
+    if (stock <= 0) {
+        alert("⚠️ Bu ürün şu anda stokta bulunmamaktadır.");
+        return;
+    }
+
     const existing = cart.find(x => x.Id === id);
-    if (existing) existing.qty += Number(qty); else cart.push({ ...p, qty: Number(qty) });
+    const currentQty = existing ? existing.qty : 0;
+    const requestedQty = currentQty + Number(qty);
+
+    // İstenen miktar stoğu aşıyorsa ENGELLE
+    if (requestedQty > stock) {
+        alert(`⚠️ Uyarı: Stokta sadece ${stock} adet bulunuyor. En fazla ${stock} kadar sipariş verebilirsiniz.`);
+        return; 
+    }
+
+    if (existing) existing.qty = requestedQty; 
+    else cart.push({ ...p, qty: Number(qty) });
 
     window.updateCartIcon();
     saveCartToStorage();
@@ -73,8 +93,18 @@ window.updateCartUI = function() {
 
 window.updateQty = function(index, val) {
     if (val < 1) val = 1;
+    
+    const item = cart[index];
+    const stock = Number(item.StockQuantity) || 0;
+
+    // Sınırı aşmaya çalışırsa stoğa eşitle
+    if (val > stock) {
+        alert(`⚠️ Uyarı: Stokta sadece ${stock} adet bulunuyor. En fazla ${stock} kadar sipariş verebilirsiniz.`);
+        val = stock; 
+    }
+
     cart[index].qty = Number(val);
-    window.updateCartUI();
+    if(window.updateCartUI) window.updateCartUI(); 
     saveCartToStorage();
 }
 
@@ -86,6 +116,36 @@ window.removeFromCart = function(index) {
 
 window.completeOrder = async function() {
     if (cart.length === 0) return alert("Sepetiniz boş!");
+
+    if (cart.length === 0) return alert("Sepetiniz boş!");
+
+    // --- 1. SİPARİŞ ÖNCESİ FİYAT VE STOK GÜNCELLEMESİ KONTROLÜ ---
+    let hasStockError = false;
+    let errorMessages = [];
+
+    cart.forEach(item => {
+        const dbProduct = DB.Products.find(x => x.Id === item.Id);
+        if (dbProduct) {
+            item.Price = dbProduct.Price;
+            item.SalePrice = dbProduct.SalePrice;
+            item.DiscountRate = dbProduct.DiscountRate;
+            item.StockQuantity = dbProduct.StockQuantity; // Güncellendi
+
+            const currentStock = Number(dbProduct.StockQuantity) || 0; // Güncellendi
+            
+            // Eğer o an stok bitmişse veya yetersizse hata ver
+            if (item.qty > currentStock) {
+                hasStockError = true;
+                errorMessages.push(`- ${item.Name} (Stokta Kalan: ${currentStock})`);
+            }
+        }
+    });
+
+    if (hasStockError) {
+        alert("⚠️ Siparişinizdeki bazı ürünlerin miktarı mevcut stokları aşıyor:\n\n" + errorMessages.join("\n") + "\n\nFiyatlar ve miktarlar güncellendi, lütfen sepetinizi kontrol edin.");
+        if(window.updateCartUI) window.updateCartUI(); 
+        return; 
+    }
 
     const name = document.getElementById('cus-name').value.trim();
     const company = document.getElementById('cus-company').value.trim();

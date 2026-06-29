@@ -107,6 +107,20 @@
 .fav-remove-btn { background: transparent; border: none; color: #ff4757; cursor: pointer; padding: 10px; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .fav-remove-btn:hover { transform: scale(1.2); }
 
+/* --- STOKTA YOK BUTONU TASARIMI --- */
+.btn-out-of-stock {
+    color: #ff4757 !important;
+    border-color: #ff4757 !important;
+    background: transparent !important; /* Detay sayfasındaki gold rengini ezer */
+}
+
+/* Mouse (veya dokunma) üzerine gelince kırmızıyla dolsun */
+.btn-out-of-stock:hover,
+.product-card:hover .btn-out-of-stock {
+    background: #ff4757 !important;
+    color: #fff !important;
+}
+
 /* Responsive (Sayfa İçerikleri) */
 @media (max-width: 768px) {
     .view-options { display: none; }

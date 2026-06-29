@@ -1,8 +1,8 @@
 // js/pages/detail.js
 import { DB, favorites, BIRIM } from '../store.js';
-import { formatTR } from '../utils.js';
+import { formatTR, showToast } from '../utils.js';
 
-window.openDetail = function(id) {
+window.openDetail = function (id) {
     try {
         const p = DB.Products.find(x => x.Id === id);
         if (!p) return;
@@ -35,26 +35,39 @@ window.openDetail = function(id) {
 
         const addBtn = document.getElementById('det-add-btn');
         if (addBtn) {
+
+            // --- YENİ EKLENEN STOK KONTROLÜ ---
+            const stockVal = Number(p.StockQuantity) || 0;
+            if (stockVal <= 0) {
+                addBtn.innerText = "Stokta Yok";
+                addBtn.classList.add('btn-out-of-stock');
+            } else {
+                addBtn.innerText = "Sepete Ekle";
+                addBtn.classList.remove('btn-out-of-stock');
+            }
+            // ----------------------------------
+
+            // Kod () => { ... } içine sarıldığı için sadece butona basılınca tetiklenir
             addBtn.onclick = () => {
                 window.addToCart(p.Id, qtyEl ? qtyEl.value : 1);
-                window.showPage('cart');
             };
+            
         }
 
         const favBtn = document.getElementById('det-fav-btn');
-        if(favBtn) {
+        if (favBtn) {
             // Butona kimlik veriyoruz
-            favBtn.setAttribute('data-fav-id', p.Id); 
-            
+            favBtn.setAttribute('data-fav-id', p.Id);
+
             // Sayfa açıldığında favorideyken kırmızı yap
             if (favorites.includes(p.Id)) {
                 favBtn.classList.add('active');
             } else {
                 favBtn.classList.remove('active');
             }
-            
+
             // Tıklama olayını tamamen ortak sisteme devrediyoruz
-            favBtn.onclick = function(e) {
+            favBtn.onclick = function (e) {
                 window.toggleFavoriteInline(p.Id, e);
             };
         }

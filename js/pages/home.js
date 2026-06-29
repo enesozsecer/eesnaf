@@ -4,21 +4,21 @@ import { formatTR } from '../utils.js';
 
 let html5QrcodeScanner;
 
-window.populateFilters = function() {
+window.populateFilters = function () {
     const catSelect = document.getElementById('filter-category');
     const brandSelect = document.getElementById('filter-brand');
     const groupSelect = document.getElementById('filter-productGroup');
 
-    catSelect.innerHTML = '<option value="">Tümü</option>'; 
-    brandSelect.innerHTML = '<option value="">Tümü</option>'; 
+    catSelect.innerHTML = '<option value="">Tümü</option>';
+    brandSelect.innerHTML = '<option value="">Tümü</option>';
     groupSelect.innerHTML = '<option value="">Tümü</option>';
-    
+
     DB.Categories.forEach(c => { catSelect.innerHTML += `<option value="${c.Id}">${c.Name}</option>`; });
     DB.Brands.forEach(b => { brandSelect.innerHTML += `<option value="${b.Id}">${b.Name}</option>`; });
     DB.ProductGroups.forEach(g => { groupSelect.innerHTML += `<option value="${g.Id}">${g.Name}</option>`; });
 }
 
-window.filterRenderedProducts = function() {
+window.filterRenderedProducts = function () {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = '';
 
@@ -41,18 +41,18 @@ window.filterRenderedProducts = function() {
     });
 
     const sortVal = document.getElementById('desktop-sort').value;
-    
+
     filteredProducts.sort((a, b) => {
         if (sortVal === 'price-asc') {
             return Number(a.SalePrice) - Number(b.SalePrice); // En Düşükten Yükseğe
-        } 
+        }
         else if (sortVal === 'price-desc') {
             return Number(b.SalePrice) - Number(a.SalePrice); // En Yüksekten Düşüğe
-        } 
+        }
         else if (sortVal === 'az') {
             // Türkçe karakter desteği ile (Ş, Ğ, Ü, vb.) A'dan Z'ye
-            return a.Name.localeCompare(b.Name, 'tr'); 
-        } 
+            return a.Name.localeCompare(b.Name, 'tr');
+        }
         else if (sortVal === 'za') {
             return b.Name.localeCompare(a.Name, 'tr'); // Z'den A'ya
         }
@@ -71,6 +71,13 @@ window.filterRenderedProducts = function() {
         let oldPriceHtml = rawDiscount > 0 ? `<span class="old-price">${formatTR(p.Price)}₺</span>` : `<span class="old-price"></span>`;
         let imgSrc = p.PicturePath && p.PicturePath !== "" ? p.PicturePath : 'img/logo-192.png';
         let unitName = BIRIM[p.UnitId] || 'Adet';
+
+        // --- YENİ EKLENEN STOK KONTROLÜ ---
+        const stockVal = Number(p.StockQuantity) || 0;
+        const isOutOfStock = stockVal <= 0;
+        const btnText = isOutOfStock ? "Stokta Yok" : "Sepete Ekle";
+        const btnClass = isOutOfStock ? "btn-add btn-out-of-stock" : "btn-add";
+        // ----------------------------------
 
         grid.innerHTML += `
             <div class="product-card" onclick="window.openDetail('${p.Id}')">
@@ -92,7 +99,7 @@ window.filterRenderedProducts = function() {
                     </div>
                     <div class="card-action-area" onclick="event.stopPropagation();">
                         <input type="number" id="qty-${p.Id}" value="1" min="1" class="card-qty-input">
-                        <button class="btn-add" onclick="window.addToCart('${p.Id}', document.getElementById('qty-${p.Id}').value)">Sepete Ekle</button>
+                        <button class="${btnClass}" onclick="window.addToCart('${p.Id}', document.getElementById('qty-${p.Id}').value)">${btnText}</button>
                     </div>
                 </div>
             </div>
@@ -100,34 +107,34 @@ window.filterRenderedProducts = function() {
     });
 }
 
-window.changeGrid = function(col) {
+window.changeGrid = function (col) {
     document.querySelectorAll('.btn-grid').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById('products-grid').className = `products-grid grid-${col}`;
 }
 
-window.openBarcodeScanner = function() {
+window.openBarcodeScanner = function () {
     document.getElementById('barcode-modal').style.display = 'flex';
     html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
     html5QrcodeScanner.render((decodedText) => {
         document.getElementById('searchInput').value = decodedText;
         window.filterRenderedProducts();
         window.closeBarcodeScanner();
-    }, () => {});
+    }, () => { });
 }
 
-window.closeBarcodeScanner = function() {
+window.closeBarcodeScanner = function () {
     if (html5QrcodeScanner) { html5QrcodeScanner.clear(); }
     document.getElementById('barcode-modal').style.display = 'none';
 }
 
-window.applySort = function(val) {
+window.applySort = function (val) {
     // Sadece sidebar içindeki sıralama kutusu kaldı, değerini değiştirip tetikliyoruz.
     const deskSort = document.getElementById('desktop-sort');
-    if(deskSort) {
+    if (deskSort) {
         deskSort.value = val;
     }
-    
+
     // Verileri anında yeniden sıralayıp ekrana basar
     window.filterRenderedProducts();
 }
