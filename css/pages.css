@@ -139,4 +139,67 @@
     .fav-title { font-size: 0.95rem; }
     .fav-price { font-size: 1.05rem; }
     .fav-remove-btn svg { width: 20px; height: 20px; }
+        /* --- MOBİL SEPET TABLOSU (KART GÖRÜNÜMÜ) --- */
+    .table-responsive { overflow-x: hidden !important; } 
+    .cart-table { min-width: 100% !important; display: block; }
+    .cart-table thead { display: none; } /* Mobilde başlıkları gizle */
+    .cart-table tbody { display: block; width: 100%; }
+    
+    .cart-table tr { 
+        display: flex; 
+        flex-wrap: wrap; 
+        align-items: center; 
+        background: var(--bg-color); 
+        border: 1px solid var(--gold); 
+        border-radius: 12px; 
+        margin-bottom: 15px; 
+        padding: 12px; 
+        position: relative;
+    }
+    .cart-table td { padding: 5px 0; border: none; text-align: left !important; }
+    
+    /* 1. Ürün Adı */
+    .cart-table td:nth-child(1) { width: 100%; padding-right: 40px; font-size: 1rem; margin-bottom: 8px; }
+    
+    /* 2. Birim Fiyat */
+    .cart-table td:nth-child(2) { width: 45%; font-size: 0.9rem; }
+    
+    /* 3. Miktar */
+    .cart-table td:nth-child(3) { width: 55%; display: flex; justify-content: flex-end; }
+    
+    /* 4. İndirim (Yer kaplamaması için mobilde gizliyoruz, zaten genel toplama yansıyor) */
+    .cart-table td:nth-child(4) { display: none; }
+    
+    /* 5. Toplam Fiyat */
+    .cart-table td:nth-child(5) { 
+        width: 100%; 
+        text-align: right !important; 
+        font-size: 1.2rem; 
+        color: var(--gold) !important; 
+        border-top: 1px dashed rgba(212,175,55,0.3); 
+        margin-top: 10px; 
+        padding-top: 10px; 
+    }
+    
+    /* 6. Çöp Kutusu (Sağ Üst Köşeye Sabit) */
+    .cart-table td:nth-child(6) { 
+        position: absolute; 
+        top: 8px; 
+        right: 8px; 
+        padding: 0;
+    }
+    /* Sepet kutularını tam 768px'te alt alta dizer */
+    .cart-layout { 
+        flex-direction: column; 
+        gap: 20px; 
+    }
+    
+    .checkout-form, 
+    .cart-items-container { 
+        width: 100%; 
+        min-width: 100%; 
+    }
+}
+@media (max-width: 1040px) {
+    
 }

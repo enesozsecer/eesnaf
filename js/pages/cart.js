@@ -79,13 +79,13 @@ window.updateCartUI = function() {
     
     const shippingEl = document.getElementById('ui-shipping-fee');
     if(shippingEl) {
-        shippingEl.innerText = uiShippingFee > 0 ? "50,00 ₺" : "Ücretsiz";
+        shippingEl.innerText = uiShippingFee > 0 ? "50,00₺" : "Ücretsiz";
         shippingEl.style.color = uiShippingFee > 0 ? "inherit" : "#25D366";
     }
     
     const totalEl = document.getElementById('ui-grand-total');
     if(totalEl) {
-        totalEl.innerText = formatTR(finalPayable) + " ₺";
+        totalEl.innerText = formatTR(finalPayable) + "₺";
     }
 
     window.updateCartIcon();
@@ -177,10 +177,10 @@ window.completeOrder = async function() {
         tableRowsHTML += `
             <tr>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; color: #000; text-align: left;">${item.Name}</td>
-                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee; color: #000;">${formatTR(item.Price)} ₺</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee; color: #000;">${formatTR(item.Price)}₺</td>
                 <td style="padding: 12px; text-align: center; border-bottom: 1px solid #eee; color: #000;">${item.qty} ${unitName}</td>
-                <td style="padding: 12px; text-align: center; color: red; border-bottom: 1px solid #eee;">${iD > 0 ? "-" + formatTR(iD) + " ₺" : "-"}</td>
-                <td style="padding: 12px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee; color: #000;">${formatTR(iS)} ₺</td>
+                <td style="padding: 12px; text-align: center; color: red; border-bottom: 1px solid #eee;">${iD > 0 ? "-" + formatTR(iD) + "₺" : "-"}</td>
+                <td style="padding: 12px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee; color: #000;">${formatTR(iS)}₺</td>
             </tr>
         `;
     });
@@ -220,19 +220,19 @@ window.completeOrder = async function() {
                         <table style="width: 100%; font-size: 14px; line-height: 2; color: #000;">
                             <tr>
                                 <td style="text-align: left; padding: 2px 0;">Ara Toplam:</td>
-                                <td style="text-align: right; padding: 2px 0;"><strong>${formatTR(subTotal)} ₺</strong></td>
+                                <td style="text-align: right; padding: 2px 0;"><strong>${formatTR(subTotal)}₺</strong></td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; padding: 2px 0; color: red;">Kazanılan İndirim:</td>
-                                <td style="text-align: right; padding: 2px 0; color: red;"><strong>-${formatTR(discountTotal)} ₺</strong></td>
+                                <td style="text-align: right; padding: 2px 0; color: red;"><strong>-${formatTR(discountTotal)}₺</strong></td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; padding: 2px 0;">Kargo Ücreti:</td>
-                                <td style="text-align: right; padding: 2px 0; ${shippingFee > 0 ? 'color:#000;' : 'color:#25D366;'}"><strong>${shippingFee > 0 ? formatTR(shippingFee) + ' ₺' : 'Ücretsiz'}</strong></td>
+                                <td style="text-align: right; padding: 2px 0; ${shippingFee > 0 ? 'color:#000;' : 'color:#25D366;'}"><strong>${shippingFee > 0 ? formatTR(shippingFee) + '₺' : 'Ücretsiz'}</strong></td>
                             </tr>
                             <tr style="border-top: 2px solid #044F40;">
                                 <td style="text-align: left; padding-top: 12px; font-size: 16px; color: #044F40; font-weight: bold;">ÖDENECEK TUTAR:</td>
-                                <td style="text-align: right; padding-top: 12px; font-size: 22px; color: #044F40; font-weight: bold;">${formatTR(finalTotalToPay)} ₺</td>
+                                <td style="text-align: right; padding-top: 12px; font-size: 22px; color: #044F40; font-weight: bold;">${formatTR(finalTotalToPay)}₺</td>
                             </tr>
                         </table>
                     </td>

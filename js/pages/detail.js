@@ -24,9 +24,9 @@ window.openDetail = function (id) {
         setText('det-name', p.Name);
         setHtml('det-brand', `Marka: <strong>${brandName}</strong>`);
         setHtml('det-group', `Ürün Grubu: <strong>${groupName}</strong>`);
-        setText('det-old-price', Number(p.DiscountRate) > 0 ? formatTR(p.Price) + " ₺" : "");
-        setText('det-price', formatTR(salePrice) + " ₺");
-        setHtml('det-cash-credit', `<strong>Birim Fiyat:</strong><br>(Kredi Kartı: ${formatTR(salePrice)} ₺ / Nakit: <span>${formatTR(cashPrice)} ₺</span>)`);
+        setText('det-old-price', Number(p.DiscountRate) > 0 ? formatTR(p.Price) + "₺" : "");
+        setText('det-price', formatTR(salePrice) + "₺");
+        setHtml('det-cash-credit', `<strong>Birim Fiyat:</strong><br>(Kredi Kartı: ${formatTR(salePrice)}₺ / Nakit: <span>${formatTR(cashPrice)}₺</span>)`);
         setText('det-desc', p.Description || 'Bu ürün için detaylı açıklama girilmemiştir.');
         setText('det-unit', typeof BIRIM !== 'undefined' ? (BIRIM[p.UnitId] || 'Adet') : 'Adet');
 
